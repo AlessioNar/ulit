@@ -1,9 +1,5 @@
 name: Upload Python Package to PyPI when a Release is Created
 
-on:
-  release:0.0.1
-    types: 
-
 jobs:
   pypi-publish:
     name: Publish release to PyPI
@@ -13,18 +9,6 @@ jobs:
       url: https://pypi.org/p/op_cellar_client
     permissions:
       id-token: write
-    steps:
-
-  # .github/workflows/ci-cd.yml
-jobs:
-  pypi-publish:
-    name: Upload release to PyPI
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/<your-pypi-project-name>
-    permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
