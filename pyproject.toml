@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "op_cellar"
+version = "0.0.1"
+description = "A generic package to query and retrieve documents from Cellar, the common data repository of the Publications Office of the European Union."
+authors = ["AlessioNar <alessio.nardin@gmail.com>", "seljaseppala"]
+license = "EUPL 1.2"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+spacy = "^3.7.6"
+sparqlwrapper = "^2.0.0"
+beautifulsoup4 = "^4.12.3"
+lxml = "^5.3.0"
+chardet = "^5.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[project.urls]
+Homepage = "https://github.com/AlessioNar/op_cellar"
+Issues = "https://github.com/AlessioNar/op_cellar/issues"
