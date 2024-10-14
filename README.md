@@ -30,11 +30,21 @@ Key Functionality
 
 ```
 pip install op_cellar
+poetry add op_cellar
+
 ```
 
-
 ## SPARQL query
-The SPARQL query in the `sparql_queries/` directory was designed to retrieve EU regulatory documents in the financial domain using EuroVoc concept ids. It can be used as a template to create new queries for other domains, languages, types of documents, etc.
+
+```
+from op_cellar.sparql import send_sparql_query
+
+sparql_results_table = send_sparql_query("path to the file containing sparql", "path to the desired output file")
+
+
+```
+
+ the `sparql_queries/` directory was designed to retrieve EU regulatory documents in the financial domain using EuroVoc concept ids. It can be used as a template to create new queries for other domains, languages, types of documents, etc.
 
 ## Default data directories
 - The information retrieved from the SPARQL endpoint is stored by default under `sparql_query_results/query_results_<date>-<time>.json` (e.g., `sparql_query_results/query_results_query_results_20201203-145051.json`).
