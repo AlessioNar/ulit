@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: Upload Python Package to PyPI when a Release is Created
 
 env:
@@ -11,8 +12,14 @@ on:
 jobs:
   build-dist:
     name: 📦 Build distribution 
+=======
+jobs:
+  pypi-publish:
+    name: "Publish Python Package to PyPI on Release Creation"
+>>>>>>> 7953b87754144140e1f7790df2ed1aed1ad5858a
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -34,3 +41,20 @@ jobs:
       url: https://pypi.org/p/${{ env.name }}
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+=======
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
+      - name: Build package
+        run: |
+          python setup.py sdist bdist_wheel  # Could also be python -m build
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+>>>>>>> 7953b87754144140e1f7790df2ed1aed1ad5858a
