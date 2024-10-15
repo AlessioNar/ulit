@@ -1,36 +1,28 @@
-name: Upload Python Package to PyPI when a Release is Created
-
-env:
-  name: op_cellar
-on:
-  release:
-    types: [published]
-
-
+name: Publish Python 🐍 distribution 📦 to PyPI
+on: push
 
 jobs:
-  build-dist:
-    name: 📦 Build distribution 
+  build:
+    name: Build distribution 📦
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-          cache: "pip"
-      - run: pip install .[dev]
-      - run: python -m build
-      - name: Store the distribution packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-  publish-to-pypi:
-    name: Publish Python 🐍 distribution 📦 to PyPI
-    runs-on: ubuntu-latest
-    needs: build-dist
-    environment:
-      name: pypi
-      url: https://pypi.org/p/${{ env.name }}
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - name: Install pypa/build
+      run: >-
+        python3 -m
+        pip install
+        build
+        --user
+    - name: Build a binary wheel and a source tarball
+      run: python3 -m build
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+  
