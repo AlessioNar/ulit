@@ -39,7 +39,6 @@ def download_documents(results, download_dir, nthreads=1):
     threads = []
     for i in range(nthreads):  
         cellar_ids_subset = cellar_ids[i::nthreads]
-        print(cellar_ids_subset)
         t = threading.Thread(target=process_range, args=(cellar_ids_subset, os.path.join(download_dir)))
         threads.append(t)
     [t.start() for t in threads]
