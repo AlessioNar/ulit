@@ -45,7 +45,6 @@ def download_documents(results, download_dir, nthreads=1):
     [t.start() for t in threads]
     [t.join() for t in threads]
 
-# Function to create a list of CELLAR ids from the given cellar_results JSON dictionary and return the list
 def get_cellar_ids_from_json_results(cellar_results):
     """
     Extract CELLAR ids from a JSON dictionary.
@@ -106,7 +105,7 @@ def rest_get_call(id: str) -> requests.Response:
     Notes
     -----
     The request is sent with the following headers:
-    - Accept: application/xhtml+xml
+    - Accept: application/xhtml+xml @todo - cater for other kinds of requests too.
     - Accept-Language: eng
     - Content-Type: application/x-www-form-urlencoded
     - Host: publications.europa.eu
@@ -144,6 +143,36 @@ def rest_get_call(id: str) -> requests.Response:
 
 # Function to process a single file
 def process_single_file(response: requests.Response, folder_path: str, id: str):
+    """
+    Process a single file by saving its contents to a file.
+
+    Parameters
+    ----------
+    response : requests.Response
+        The HTTP response object containing the file contents.
+    folder_path : str
+        The path to the folder where the file will be saved.
+    id : str
+        The id of the file, used to construct the file name.
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    This function saves the contents of a single file from an HTTP response to a
+    file on disk. The file name is constructed by appending the id to the folder
+    path with an '.html' extension. The function ensures that the directory path
+    exists before attempting to write the file.
+
+    Examples
+    --------
+    >>> response = requests.get('http://example.com/file')
+    >>> folder_path = '/path/to/folder'
+    >>> id = 'file_id'
+    >>> process_single_file(response, folder_path, id)
+    """
     out_file = folder_path + '/' + id + '.html'
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
     with open(out_file, 'w+', encoding="utf-8") as f:
@@ -152,6 +181,38 @@ def process_single_file(response: requests.Response, folder_path: str, id: str):
 
 # Function to process a list of ids to download the corresponding zip files
 def process_range(ids: list, folder_path: str):
+    """
+    Process a list of ids to download the corresponding zip files.
+
+    Parameters
+    ----------
+    ids : list
+        List of ids to process.
+    folder_path : str
+        Path to the folder where the files will be downloaded.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    Exception
+        If an error occurs during the processing.
+
+    Notes
+    -----
+    This function iterates over the list of ids, sends a GET request for each id,
+    and downloads the corresponding file. If the file is a zip file, it is extracted
+    to the specified folder. If the file is not a zip file, it is processed as a
+    single file. If the file cannot be downloaded, the id is logged to a file.
+
+    Examples
+    --------
+    >>> ids = ['id1', 'id2', 'id3']
+    >>> folder_path = '/path/to/folder'
+    >>> process_range(ids, folder_path)
+    """
     try:
         zip_files = []
         single_files = []
@@ -186,6 +247,20 @@ def process_range(ids: list, folder_path: str):
     except Exception as e:
         logging.error(f"Error processing range: {e}")
 
+
+# Function to get the current timestamp
+def get_current_timestamp():
+    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+
+# Function to download a zip file and extract it
+def extract_zip(response: requests.Response, folder_path: str):
+    try:
+        z = zipfile.ZipFile(io.BytesIO(response.content))
+        z.extractall(folder_path)
+    except Exception as e:
+        logging.error(f"Error downloading zip: {e}")
+
 # Function to log downloaded files
 def log_downloaded_files(downloaded_files: list, dir_to_check: str):
     in_dir_name = LOG_DIR + 'in_dir_lists/'
@@ -199,23 +274,12 @@ def log_missing_ids(missing_ids: list):
     print_list_to_file(new_ids_dir_name + 'cellar_ids_' + get_current_timestamp() + '.txt', missing_ids)
 
 
-# Function to get the current timestamp
-def get_current_timestamp():
-    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-
 # Function to print a list to a file
 def print_list_to_file(filename, lst):
     with open(filename, 'w+') as f:
         for item in lst:
             f.write(item + '\n')
 
-# Function to download a zip file and extract it
-def extract_zip(response: requests.Response, folder_path: str):
-    try:
-        z = zipfile.ZipFile(io.BytesIO(response.content))
-        z.extractall(folder_path)
-    except Exception as e:
-        logging.error(f"Error downloading zip: {e}")
 
 # Main function
 if __name__ == "__main__":
