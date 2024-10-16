@@ -11,6 +11,82 @@ import json
 BASE_URL = 'http://publications.europa.eu/resource/cellar/'
 LOG_DIR = 'logs/'
 
+def download_documents(results, download_dir, nthreads=1):
+    """
+    Download Cellar documents in parallel using multiple threads.
+
+    Sends a REST query to the Publications Office APIs and downloads the documents
+    corresponding to the given results.
+
+    Parameters
+    ----------
+    results : dict
+        A dictionary containing the JSON results from the Publications Office APIs.
+    download_dir : str
+        The directory where the downloaded documents will be saved.
+    nthreads : int
+        The number of threads to use to make the request
+
+    Notes
+    -----
+    The function uses a separate thread for each subset of Cellar ids.
+    The number of threads can be adjusted by modifying the `nthreads` parameter.
+    """
+    cellar_ids = get_cellar_ids_from_json_results(results)
+
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+    
+    threads = []
+    for i in range(nthreads):  
+        sub_list = cellar_ids[i::nthreads]
+        t = threading.Thread(target=process_range, args=(sub_list, os.path.join(download_dir, str(sub_list))))
+        threads.append(t)
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+
+# Function to create a list of CELLAR ids from the given cellar_results JSON dictionary and return the list
+def get_cellar_ids_from_json_results(cellar_results):
+    """
+    Extract CELLAR ids from a JSON dictionary.
+
+    Parameters
+    ----------
+    cellar_results : dict
+        A dictionary containing the response of the CELLAR SPARQL query
+
+    Returns
+    -------
+    list
+        A list of CELLAR ids.
+
+    Notes
+    -----
+    The function assumes that the JSON dictionary has the following structure:
+    - The dictionary contains a key "results" that maps to another dictionary.
+    - The inner dictionary contains a key "bindings" that maps to a list of dictionaries.
+    - Each dictionary in the list contains a key "cellarURIs" that maps to a dictionary.
+    - The innermost dictionary contains a key "value" that maps to a string representing the CELLAR URI.
+
+    The function extracts the CELLAR id by splitting the CELLAR URI at "cellar/" and taking the second part.
+
+    Examples
+    --------
+    >>> cellar_results = {
+    ...     "results": {
+    ...         "bindings": [
+    ...             {"cellarURIs": {"value": "https://example.com/cellar/some_id"}},
+    ...             {"cellarURIs": {"value": "https://example.com/cellar/another_id"}}
+    ...         ]
+    ...     }
+    ... }
+    >>> cellar_ids = get_cellar_ids_from_json_results(cellar_results)
+    >>> print(cellar_ids)
+    ['some_id', 'another_id']
+    """
+    results_list = cellar_results["results"]["bindings"]
+    cellar_ids_list = [results_list[i]["cellarURIs"]["value"].split("cellar/")[1] for i in range(len(results_list))]
+    return cellar_ids_list
 
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
 def rest_get_call(id: str) -> requests.Response:
@@ -65,84 +141,6 @@ def rest_get_call(id: str) -> requests.Response:
     except requests.RequestException as e:
         logging.error(f"Error sending GET request: {e}")
         return None
-
-# Function to create a list of CELLAR ids from the given cellar_results JSON dictionary and return the list
-def get_cellar_ids_from_json_results(cellar_results):
-    """
-    Extract CELLAR ids from a JSON dictionary.
-
-    Parameters
-    ----------
-    cellar_results : dict
-        A dictionary containing the response of the CELLAR SPARQL query
-
-    Returns
-    -------
-    list
-        A list of CELLAR ids.
-
-    Notes
-    -----
-    The function assumes that the JSON dictionary has the following structure:
-    - The dictionary contains a key "results" that maps to another dictionary.
-    - The inner dictionary contains a key "bindings" that maps to a list of dictionaries.
-    - Each dictionary in the list contains a key "cellarURIs" that maps to a dictionary.
-    - The innermost dictionary contains a key "value" that maps to a string representing the CELLAR URI.
-
-    The function extracts the CELLAR id by splitting the CELLAR URI at "cellar/" and taking the second part.
-
-    Examples
-    --------
-    >>> cellar_results = {
-    ...     "results": {
-    ...         "bindings": [
-    ...             {"cellarURIs": {"value": "https://example.com/cellar/some_id"}},
-    ...             {"cellarURIs": {"value": "https://example.com/cellar/another_id"}}
-    ...         ]
-    ...     }
-    ... }
-    >>> cellar_ids = get_cellar_ids_from_json_results(cellar_results)
-    >>> print(cellar_ids)
-    ['some_id', 'another_id']
-    """
-    results_list = cellar_results["results"]["bindings"]
-    cellar_ids_list = [results_list[i]["cellarURIs"]["value"].split("cellar/")[1] for i in range(len(results_list))]
-    return cellar_ids_list
-
-def download_documents(results, download_dir, nthreads=1):
-    """
-    Download Cellar documents in parallel using multiple threads.
-
-    Sends a REST query to the Publications Office APIs and downloads the documents
-    corresponding to the given results.
-
-    Parameters
-    ----------
-    results : dict
-        A dictionary containing the JSON results from the Publications Office APIs.
-    download_dir : str
-        The directory where the downloaded documents will be saved.
-    nthreads : int
-        The number of threads to use to make the request
-
-    Notes
-    -----
-    The function uses a separate thread for each subset of Cellar ids.
-    The number of threads can be adjusted by modifying the `nthreads` parameter.
-    """
-    cellar_ids = get_cellar_ids_from_json_results(results)
-
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
-    
-    threads = []
-    for i in range(nthreads):  
-        sub_list = cellar_ids[i::nthreads]
-        t = threading.Thread(target=process_range, args=(sub_list, os.path.join(download_dir, str(sub_list))))
-        threads.append(t)
-    [t.start() for t in threads]
-    [t.join() for t in threads]
-
 
 # Function to process a single file
 def process_single_file(response: requests.Response, folder_path: str, id: str):
@@ -218,7 +216,6 @@ def extract_zip(response: requests.Response, folder_path: str):
         z.extractall(folder_path)
     except Exception as e:
         logging.error(f"Error downloading zip: {e}")
-
 
 # Main function
 if __name__ == "__main__":
