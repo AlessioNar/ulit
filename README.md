@@ -49,4 +49,4 @@ Replace `"path_to_sparql_file"` with the actual path to your SPARQL query file a
 
 The op_cellar package has been inspired by a series of previous packages and builds upon some of their architectures and workflows. We would like to acknowledge the following sources that have contributed to the development of this generic solution solution:
 
-* The (eu_corpus_compiler)[https://github.com/seljaseppala/eu_corpus_compiler] package by Selja Seppala
+* The [eu_corpus_compiler](https://github.com/seljaseppala/eu_corpus_compiler) package by Selja Seppala
