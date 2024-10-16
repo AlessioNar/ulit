@@ -1,5 +1,7 @@
 # `op_cellar`, a Python package for the CELLAR Publications Office of the European Union
 
+[![Publish Python 🐍 distribution 📦 to PyPI](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml/badge.svg)](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml)
+
 ## 1. Introduction
 
 The `op_cellar` package is a Python client that provides a wrapper to query and retrieve documents among the various endpoints of the Publications Office of the European Union.
