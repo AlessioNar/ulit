@@ -113,11 +113,14 @@ def download_documents(results, download_dir):
     Sends a REST query to the Publications Office APIs and downloads the Cellar documents
     """
     cellar_ids = get_cellar_ids_from_json_results(results)
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+    
     nthreads = 1
     threads = []
     for i in range(nthreads):  
         sub_list = cellar_ids[i::nthreads]
-        t = threading.Thread(target=process_range, args=(sub_list, os.path.join(download_dir, str(i))))
+        t = threading.Thread(target=process_range, args=(sub_list, os.path.join(download_dir, str(sub_list))))
         threads.append(t)
     [t.start() for t in threads]
     [t.join() for t in threads]
