@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-The `op_cellar` package is a Python client that provides a wrapper to query and retrieve documents among the various endpoints of the Publications Office of the European Union. This README will guide you through its installation and usage
+The `op_cellar` package is a Python client that provides a wrapper to query and retrieve documents among the various endpoints of the Publications Office of the European Union.
 
 ## 2. Installation
 
@@ -47,7 +47,7 @@ Replace `"path_to_sparql_file"` with the actual path to your SPARQL query file a
 
 ## Acknowledgements
 
-The op_cellar package has been inspired by a series of previous packages and builds upon some of their architectures and workflows. We would like to acknowledge the following sources that have contributed to the development of this generic solution solution:
+The op_cellar package has been inspired by a series of previous packages and builds upon some of their architectures and workflows. We would like to acknowledge the following sources that have contributed to the development of this generic solution:
 
 * The [eu_corpus_compiler](https://github.com/seljaseppala/eu_corpus_compiler) package by Selja Seppala
 
