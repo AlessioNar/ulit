@@ -36,11 +36,11 @@ def download_documents(results, download_dir, nthreads=1):
 
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
-    
     threads = []
     for i in range(nthreads):  
-        sub_list = cellar_ids[i::nthreads]
-        t = threading.Thread(target=process_range, args=(sub_list, os.path.join(download_dir, str(sub_list))))
+        cellar_ids_subset = cellar_ids[i::nthreads]
+        print(cellar_ids_subset)
+        t = threading.Thread(target=process_range, args=(cellar_ids_subset, os.path.join(download_dir)))
         threads.append(t)
     [t.start() for t in threads]
     [t.join() for t in threads]
@@ -87,6 +87,74 @@ def get_cellar_ids_from_json_results(cellar_results):
     cellar_ids_list = [results_list[i]["cellarURIs"]["value"].split("cellar/")[1] for i in range(len(results_list))]
     return cellar_ids_list
 
+# Function to process a list of ids to download the corresponding zip files
+def process_range(ids: list, folder_path: str):
+    """
+    Process a list of ids to download the corresponding zip files.
+
+    Parameters
+    ----------
+    ids : list
+        List of ids to process.
+    folder_path : str
+        Path to the folder where the files will be downloaded.
+
+    Returns
+    -------
+    None
+
+    Raises
+    ------
+    Exception
+        If an error occurs during the processing.
+
+    Notes
+    -----
+    This function iterates over the list of ids, sends a GET request for each id,
+    and downloads the corresponding file. If the file is a zip file, it is extracted
+    to the specified folder. If the file is not a zip file, it is processed as a
+    single file. If the file cannot be downloaded, the id is logged to a file.
+
+    Examples
+    --------
+    >>> ids = ['id1', 'id2', 'id3']
+    >>> folder_path = '/path/to/folder'
+    >>> process_range(ids, folder_path)
+    """
+    try:
+        zip_files = []
+        single_files = []
+        other_downloads = []
+        
+        for id in ids:
+            sub_folder_path = os.path.join(folder_path, id)
+            
+            response = rest_get_call(id.strip())
+            if response is None:
+                continue
+            
+            if 'Content-Type' in response.headers:
+                if 'zip' in response.headers['Content-Type']:
+                    zip_files.append(id)
+                    extract_zip(response, sub_folder_path)
+                else:
+                    single_files.append(id)
+                    process_single_file(response, sub_folder_path)
+            else:
+                other_downloads.append(id)
+        
+        if len(other_downloads) != 0:
+            # Log results
+            id_logs_path = LOG_DIR + 'failed_' + get_current_timestamp() + '.txt'
+            os.makedirs(os.path.dirname(id_logs_path), exist_ok=True)
+            with open(id_logs_path, 'w+') as f:
+                f.write('Failed downloads ' + get_current_timestamp() + '\n' + str(other_downloads))
+        
+        with open(LOG_DIR + get_current_timestamp() + '.txt', 'w+') as f:
+            f.write(f"Zip files: {len(zip_files)}, Single files: {len(single_files)}, Failed downloads: {len(other_downloads)}")
+    except Exception as e:
+        logging.error(f"Error processing range: {e}")
+
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
 def rest_get_call(id: str) -> requests.Response:
     """
@@ -129,7 +197,7 @@ def rest_get_call(id: str) -> requests.Response:
     try:
         url = BASE_URL + id
         headers = {
-            'Accept': "application/xhtml+xml",
+            'Accept': "application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml;notice=object",
             'Accept-Language': "eng",
             'Content-Type': "application/x-www-form-urlencoded",
             'Host': "publications.europa.eu"
@@ -141,8 +209,9 @@ def rest_get_call(id: str) -> requests.Response:
         logging.error(f"Error sending GET request: {e}")
         return None
 
+
 # Function to process a single file
-def process_single_file(response: requests.Response, folder_path: str, id: str):
+def process_single_file(response: requests.Response, folder_path: str):
     """
     Process a single file by saving its contents to a file.
 
@@ -152,8 +221,6 @@ def process_single_file(response: requests.Response, folder_path: str, id: str):
         The HTTP response object containing the file contents.
     folder_path : str
         The path to the folder where the file will be saved.
-    id : str
-        The id of the file, used to construct the file name.
 
     Returns
     -------
@@ -170,82 +237,13 @@ def process_single_file(response: requests.Response, folder_path: str, id: str):
     --------
     >>> response = requests.get('http://example.com/file')
     >>> folder_path = '/path/to/folder'
-    >>> id = 'file_id'
-    >>> process_single_file(response, folder_path, id)
+    >>> process_single_file(response, folder_path)
     """
-    out_file = folder_path + '/' + id + '.html'
+    out_file = folder_path + '.html'
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
     with open(out_file, 'w+', encoding="utf-8") as f:
         f.write(response.text)
 
-
-# Function to process a list of ids to download the corresponding zip files
-def process_range(ids: list, folder_path: str):
-    """
-    Process a list of ids to download the corresponding zip files.
-
-    Parameters
-    ----------
-    ids : list
-        List of ids to process.
-    folder_path : str
-        Path to the folder where the files will be downloaded.
-
-    Returns
-    -------
-    None
-
-    Raises
-    ------
-    Exception
-        If an error occurs during the processing.
-
-    Notes
-    -----
-    This function iterates over the list of ids, sends a GET request for each id,
-    and downloads the corresponding file. If the file is a zip file, it is extracted
-    to the specified folder. If the file is not a zip file, it is processed as a
-    single file. If the file cannot be downloaded, the id is logged to a file.
-
-    Examples
-    --------
-    >>> ids = ['id1', 'id2', 'id3']
-    >>> folder_path = '/path/to/folder'
-    >>> process_range(ids, folder_path)
-    """
-    try:
-        zip_files = []
-        single_files = []
-        other_downloads = []
-        
-        for id in ids:
-            sub_folder_path = folder_path
-            
-            response = rest_get_call(id.strip())
-            if response is None:
-                continue
-            
-            if 'Content-Type' in response.headers:
-                if 'zip' in response.headers['Content-Type']:
-                    zip_files.append(id)
-                    extract_zip(response, sub_folder_path)
-                else:
-                    single_files.append(id)
-                    process_single_file(response, sub_folder_path, id)
-            else:
-                other_downloads.append(id)
-        
-        if len(other_downloads) != 0:
-            # Log results
-            id_logs_path = LOG_DIR + 'failed_' + get_current_timestamp() + '.txt'
-            os.makedirs(os.path.dirname(id_logs_path), exist_ok=True)
-            with open(id_logs_path, 'w+') as f:
-                f.write('Failed downloads ' + get_current_timestamp() + '\n' + str(other_downloads))
-        
-        with open(LOG_DIR + get_current_timestamp() + '.txt', 'w+') as f:
-            f.write(f"Zip files: {len(zip_files)}, Single files: {len(single_files)}, Failed downloads: {len(other_downloads)}")
-    except Exception as e:
-        logging.error(f"Error processing range: {e}")
 
 
 # Function to get the current timestamp
