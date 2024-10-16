@@ -172,7 +172,7 @@ def rest_get_call(id: str) -> requests.Response:
     Notes
     -----
     The request is sent with the following headers:
-    - Accept: application/xhtml+xml @todo - cater for other kinds of requests too.
+    - Accept: application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml;notice=object
     - Accept-Language: eng
     - Content-Type: application/x-www-form-urlencoded
     - Host: publications.europa.eu
