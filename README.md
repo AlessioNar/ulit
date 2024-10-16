@@ -1,6 +1,6 @@
 # `op_cellar`, a Python package for the CELLAR Publications Office of the European Union
 
-[![Publish Python 🐍 distribution 📦 to PyPI](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml/badge.svg)](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml)
+[![Publish Package to PyPI](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml/badge.svg)](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml)
 
 ## 1. Introduction
 
