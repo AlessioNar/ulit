@@ -1,3 +1,4 @@
 build/*
 dist/*
 op_cellar.egg-info/*
+op_cellar/__pycache__/*
