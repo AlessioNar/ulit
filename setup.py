@@ -18,5 +18,5 @@ setup(
 
     ],
 
-    version="0.0.1-alpha",
+    version="0.0.1-beta",
 )
