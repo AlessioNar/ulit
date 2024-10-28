@@ -19,6 +19,7 @@ poetry init
 poetry shell
 ```
 
+
 2. Add the `op_cellar` package as a dependency in your `pyproject.toml` file by running the following command:
 
 ```
