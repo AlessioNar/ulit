@@ -55,6 +55,8 @@ The op_cellar package has been inspired by a series of previous packages and bui
 * https://github.com/step21/eurlex
 * https://github.com/kevin91nl/eurlex/
 * https://github.com/Lexparency/eurlex2lexparency
+* https://github.com/maastrichtlawtech/extraction_libraries
+* https://github.com/maastrichtlawtech/closer
 
 ## Copyright
 
