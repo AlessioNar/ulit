@@ -19,6 +19,7 @@ poetry init
 poetry shell
 ```
 
+
 2. Add the `op_cellar` package as a dependency in your `pyproject.toml` file by running the following command:
 
 ```
@@ -55,6 +56,8 @@ The op_cellar package has been inspired by a series of previous packages and bui
 * https://github.com/step21/eurlex
 * https://github.com/kevin91nl/eurlex/
 * https://github.com/Lexparency/eurlex2lexparency
+* https://github.com/maastrichtlawtech/extraction_libraries
+* https://github.com/maastrichtlawtech/closer
 
 ## Copyright
 

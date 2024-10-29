@@ -17,6 +17,13 @@ setup(
         'lxml>=5.3.0'
 
     ],
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: EUPL 1.2 License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 3.11',
+    ],
 
-    version="0.0.1-alpha",
+    version="0.0.1-beta",
 )
