@@ -35,15 +35,17 @@ def extract_text(file, granularity='article'):
     elif granularity == 'paragraph':
         enacting_terms = soup.find('div', class_='eli-subdivision', id='enc_1')
         
-        paragraphs = soup.find_all('div', id=lambda x: x and len(x.split('.')) == 2 and len(x.split('.')[0]) == 3 and len(x.split('.')[1]) == 3)
-        article_text = {}
-        for article in paragraphs:
-            text = article.get_text()
+        paragraphs = enacting_terms.find_all('div', id=lambda x: x and len(x.split('.')) == 2 and len(x.split('.')[0]) == 3 and len(x.split('.')[1]) == 3)
+        # Here I am missing the paragraphs composed by lists - as they are normally contained within a main article class and have no paragraphs.
+        # How to mitigate this? 
+        paragraph_text = {}
+        for paragraph in paragraphs:
+            text = paragraph.get_text()
             text = text.encode('ascii', 'ignore').decode('ascii')
             text = re.sub(r'\s+', ' ', text)  # Replace multiple spaces with a single space
             text = text.strip()  # Remove leading and trailing whitespace
-            article_text[article['id']] = text
-        return article_text
+            paragraph_text[paragraph['id']] = text
+        return paragraph_text
 
     else:
         raise ValueError(f"Unsupported granularity: {granularity}")
