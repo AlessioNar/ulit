@@ -1,4 +1,4 @@
-# `op_cellar`, a Python package for the CELLAR Publications Office of the European Union
+# `op_cellar`, a Python package for the CELLAR Semantic Repository of the Publications Office of the European Union
 
 [![Publish Package to PyPI](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml/badge.svg)](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml)
 
