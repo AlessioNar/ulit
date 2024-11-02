@@ -2,9 +2,6 @@ from abc import ABC, abstractmethod
 import re
 from http.server import BaseHTTPRequestHandler
 import xml.etree.ElementTree as ET
-
-
-import requests
 from bs4 import BeautifulSoup
 
 class Parser(ABC):
@@ -396,23 +393,6 @@ class AkomaNtosoParser(Parser):
             celex (str): CELEX ID.
         """
         self.celex = celex
-
-
-class TemplateInfo:
-    # Your TemplateInfo class definition here
-    pass
-
-class Template:
-    # Your Template class definition here
-    pass
-
-class SplitHTMLArticle:
-    # Your SplitHTMLArticle class definition here
-    pass
-
-class handler(BaseHTTPRequestHandler):
-    # Your handler class definition here
-    pass
 
 # Usage
 parsers = {
