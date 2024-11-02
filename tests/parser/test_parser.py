@@ -1,5 +1,5 @@
 import unittest
-from op_cellar.parser.parser import HTMLParser, Formex4Parser, AkomaNtosoParser
+from op_cellar.parser.formex import HTMLParser, Formex4Parser, AkomaNtosoParser
 import xml.etree.ElementTree as ET
 
 import os 
