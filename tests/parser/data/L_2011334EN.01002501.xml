@@ -36,17 +36,25 @@
         <PREAMBLE.INIT>THE EUROPEAN COMMISSION,</PREAMBLE.INIT>
         <GR.VISA>
             <VISA>Having regard to the Treaty on the Functioning of the European Union,</VISA>
-            <VISA>Having regard to Council Regulation (EC) No 1234/2007 of <DATE ISO="20071022">22 October 2007</DATE> establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)<NOTE NOTE.ID="E0001" NUMBERING="ARAB" TYPE="FOOTNOTE">
-                <P>
-                    <REF.DOC.OJ COLL="L" DATE.PUB="20071116" NO.OJ="299" PAGE.FIRST="1">OJ L 299, 16.11.2007, p. 1</REF.DOC.OJ>.
-                </P>
-            </NOTE>, and in particular Article 143 thereof,</VISA>
-        <VISA>Having regard to Council Regulation (EC) No 614/2009 of <DATE ISO="20090707">7 July 2009</DATE> on the common system of trade for ovalbumin and lactalbumin<NOTE NOTE.ID="E0002" NUMBERING="ARAB" TYPE="FOOTNOTE">
-            <P>
-                <REF.DOC.OJ COLL="L" DATE.PUB="20090714" NO.OJ="181" PAGE.FIRST="8">OJ L 181, 14.7.2009, p. 8</REF.DOC.OJ>.
-            </P>
-        </NOTE>, and in particular Article 3(4) thereof,</VISA>
-</GR.VISA>
+            <VISA>Having regard to Council Regulation (EC) No 1234/2007 of 
+                <DATE ISO="20071022">22 October 2007</DATE> 
+                establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)
+                <NOTE NOTE.ID="E0001" NUMBERING="ARAB" TYPE="FOOTNOTE">
+                    <P>
+                        <REF.DOC.OJ COLL="L" DATE.PUB="20071116" NO.OJ="299" PAGE.FIRST="1">OJ L 299, 16.11.2007, p. 1</REF.DOC.OJ>.
+                    </P>
+                </NOTE>
+                , and in particular Article 143 thereof,
+            </VISA>
+            <VISA>Having regard to Council Regulation (EC) No 614/2009 of <DATE ISO="20090707">7 July 2009</DATE> on the common system of trade for ovalbumin and lactalbumin
+                <NOTE NOTE.ID="E0002" NUMBERING="ARAB" TYPE="FOOTNOTE">
+                    <P>
+                        <REF.DOC.OJ COLL="L" DATE.PUB="20090714" NO.OJ="181" PAGE.FIRST="8">OJ L 181, 14.7.2009, p. 8</REF.DOC.OJ>.
+                    </P>
+                </NOTE>
+                , and in particular Article 3(4) thereof,
+            </VISA>
+        </GR.VISA>
 <GR.CONSID>
     <GR.CONSID.INIT>Whereas:</GR.CONSID.INIT>
     <CONSID>

@@ -88,7 +88,8 @@ class Formex4Parser(Parser):
         with open(file, 'r', encoding='utf-8') as f:
             tree = ET.parse(f)
             root = tree.getroot()
-
+            
+                        
         parsed_data = {
             "metadata": self._parse_metadata(root),
             "title": self._parse_title(root),
@@ -154,29 +155,54 @@ class Formex4Parser(Parser):
                 title_text += paragraph_text + " "
         
         return title_text.strip()
-
+    
+    
     def _parse_preamble(self, root):
         """
-        Extracts the preamble section including initial statements and considerations.
+        Extracts the preamble section, including initial statements and considerations.
 
         Args:
-        root (Element): Root XML element.
+            root (Element): Root XML element.
 
         Returns:
-        dict: Preamble details including considerations.
+            dict: Preamble details, including quotations and considerations.
         """
-        preamble_data = {"initial_statement": None, "considerations": []}
+        preamble_data = {"initial_statement": None, "quotations": [], "consid_init": None, "considerations": [], "preamble_final": None}
         preamble = root.find('PREAMBLE')
-        
-        if preamble is not None:
-            preamble_data["initial_statement"] = preamble.findtext('PREAMBLE.INIT')
-            considerations = preamble.findall('.//CONSID')
 
-            for consid in considerations:
-                paragraphs = [p.text.strip() for p in consid.iter('TXT') if p.text]
-                preamble_data["considerations"].extend(paragraphs)
+        if preamble is not None:
+            # Initial statement
+            preamble_data["initial_statement"] = preamble.findtext('PREAMBLE.INIT')
+            
+            # Removing NOTE tags as they produce noise
+            notes = preamble.findall('.//NOTE')
+            for note in notes:
+                for parent in preamble.iter():
+                    if note in list(parent):
+                        parent.remove(note)
+            # @todo. In this way we also lose the tail of each XML node NOTE that we remove. This should not happen.
+
+            
+            # Extract each <VISA> element's text in <GR.VISA>
+            for visa in preamble.findall('.//VISA'):
+                text = "".join(visa.itertext()).strip()  # Using itertext() to get all nested text
+                text = text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
+                text = re.sub(' +', ' ', text)  # replace multiple spaces with a single space
+                preamble_data["quotations"].append(text)
+
+            preamble_data["consid_init"] = preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
+
+            # Extract each <TXT> element's text and corresponding <NO.P> number within <CONSID>
+            for consid in preamble.findall('.//CONSID'):
+                number = consid.findtext('.//NO.P')
+                text = "".join(consid.find('.//TXT').itertext()).strip()
+                preamble_data["considerations"].append({"number": number, "text": text})
+
+            preamble_data["preamble_final"] = preamble.findtext('PREAMBLE.FINAL')
+
         
         return preamble_data
+
 
     def _parse_articles(self, root):
         """
@@ -196,7 +222,7 @@ class Formex4Parser(Parser):
                 article_data = {
                     "identifier": article.get("IDENTIFIER"),
                     "title": article.findtext('TI.ART'),
-                    "content": " ".join([alinea.text.strip() for alinea in article.findall('ALINEA') if alinea.text])
+                    "content": " ".join("".join(alinea.itertext()).strip() for alinea in article.findall('ALINEA'))
                 }
                 articles.append(article_data)
         
@@ -383,16 +409,7 @@ class AkomaNtosoParser(Parser):
             list[str]: List of sentences.
         """
         text = re.sub(r'\s{2,}', ' ', text)
-        return sent_tokenize(text)
-
-    def set_celex(self, celex):
-        """
-        Sets the CELEX identifier.
-        
-        Args:
-            celex (str): CELEX ID.
-        """
-        self.celex = celex
+        return text
 
 # Usage
 parsers = {

@@ -53,6 +53,7 @@ class TestFormex4Parser(unittest.TestCase):
         self.assertEqual(result, expected)
     
     def test_parse_preamble(self):
+        """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
         self.maxDiff = None  # Allow full diff if needed
         file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
         
@@ -63,23 +64,55 @@ class TestFormex4Parser(unittest.TestCase):
         
         result = self.formex_parser._parse_preamble(root)
         
-        # Expected preamble based on sample data in XML file
+        # Expected preamble structure
+        # @todo - see main function
         expected = {
             "initial_statement": "THE EUROPEAN COMMISSION,",
+            "quotations": [
+                "Having regard to the Treaty on the Functioning of the European Union,",
+                "Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)", # @incomplete
+                "Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin" # @incomplete
+            ],
+            "consid_init": "Whereas:",
             "considerations": [
-                "Commission Regulation (EC) No 1484/95",
-                "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published.",
-                "In view of the situation on the market, this amendment should be applied as soon as possible.",
-                "The measures provided for in this Regulation are in accordance with the opinion of the Management Committee for the Common Organisation of Agricultural Markets,"
-            ]
+                {"number": "(1)", "text": "Commission Regulation (EC) No 1484/95"}, # @incomplete
+                {"number": "(2)", "text": "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published."},
+                {"number": "(3)", "text": "In view of the situation on the market, this amendment should be applied as soon as possible."},
+                {"number": "(4)", "text": "The measures provided for in this Regulation are in accordance with the opinion of the Management Committee for the Common Organisation of Agricultural Markets,"}
+            ],
+            "preamble_final": "HAS ADOPTED THIS REGULATION:"
         }
         
         self.assertEqual(result, expected)
 
 
 
-       
-
+    def test_parse_articles(self):
+        self.maxDiff = None  # Allow full diff if needed
+        file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
+        
+        # Parse the XML tree and pass the root to _parse_articles
+        with open(file_path, 'r', encoding='utf-8') as f:
+            tree = ET.parse(f)
+            root = tree.getroot()
+        
+        result = self.formex_parser._parse_articles(root)
+        
+        # Expected articles based on sample data in XML file
+        expected = [
+            {
+                "identifier": "001",
+                "title": "Article 1",
+                "content": "Annex I to Regulation (EC) No 1484/95 is replaced by the Annex to this Regulation."
+            },
+            {
+                "identifier": "002",
+                "title": "Article 2",
+                "content": "This Regulation shall enter into force on the day of its publication in the Official Journal of the European Union."
+            }
+        ]
+        
+        self.assertEqual(result, expected)
 
 # Run the tests
 if __name__ == "__main__":
