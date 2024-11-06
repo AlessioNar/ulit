@@ -23,6 +23,29 @@ class AkomaNtosoParser(Parser):
 
         }
     
+    def remove_node(self, tree, node):
+        # Step 1: Remove all <authorialNote> elements from the recitals_section
+        for item in tree.findall(node, namespaces=self.namespaces):
+            note_text = ' '.join(item.itertext()).strip()
+            
+            # Find the parent and remove the <authorialNote> element
+            parent = item.getparent()
+            tail_text = item.tail
+            if parent is not None:
+                parent.remove(item)
+            # Preserve tail text if present
+            if tail_text:
+                if parent.getchildren():
+                    # If there's a previous sibling, add the tail to the last child
+                    previous_sibling = parent.getchildren()[-1]
+                    previous_sibling.tail = (previous_sibling.tail or '') + tail_text
+                else:
+                    # If no siblings, add the tail text to the parent's text
+                    parent.text = (parent.text or '') + tail_text
+        
+        return tree
+
+    
     def get_root(self, file: str):
         """
         Parses the XML file and returns the root element.
@@ -200,29 +223,8 @@ class AkomaNtosoParser(Parser):
             'eId': recitals_intro_eId
         })
 
-        # Step 1: Remove all <authorialNote> elements from the recitals_section
-        for item in recitals_section.findall('.//akn:authorialNote', namespaces=self.namespaces):
-            note_text = ' '.join(item.itertext()).strip()
-            
-            # Find the parent and remove the <authorialNote> element
-            parent = item.getparent()
-            tail_text = item.tail
-
-            if parent is not None:
-                parent.remove(item)
-
-            # Preserve tail text if present
-            if tail_text:
-                if parent.getchildren():
-                    # If there's a previous sibling, add the tail to the last child
-                    previous_sibling = parent.getchildren()[-1]
-                    previous_sibling.tail = (previous_sibling.tail or '') + tail_text
-                else:
-                    # If no siblings, add the tail text to the parent's text
-                    parent.text = (parent.text or '') + tail_text
-
-            # Optional: Print the modified parent XML for debugging purposes
-            #print(etree.tostring(parent, pretty_print=True).decode())
+        # Removing all authorialNote nodes
+        recitals_section = self.remove_node(recitals_section, './/akn:authorialNote')
 
         # Step 2: Process each <recital> element in the recitals_section without the <authorialNote> elements
         for recital in recitals_section.findall('akn:recital', namespaces=self.namespaces):
@@ -233,7 +235,7 @@ class AkomaNtosoParser(Parser):
 
             # Remove any double spaces in the concatenated recital text
             recital_text = re.sub(r'\s+', ' ', recital_text)
-            #print(recital_text)
+
             # Append the cleaned recital text and eId to the list
             recitals_text.append({
                 'recital_text': recital_text,
