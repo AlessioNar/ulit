@@ -121,7 +121,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
         other_recital = recitals_data[16]
         self.assertEqual(other_recital['eId'], "recs_1__rec_(16)", "Sixteenth recital eId does not match expected value")
         self.assertEqual("Consumers would benefit most from information that is concise, standardised and easy to compare between different payment service providers. The tools made available to consumers to compare payment account offers would not have a positive impact if the time invested in going through lengthy lists of fees for different offers outweighed the benefit of choosing the offer that represents the best value. Those tools should be multifold and consumer testing should be conducted. At this stage, fee terminology should only be standardised for the most representative terms and definitions within Member States in order to avoid the risk of excessive information and to facilitate swift implementation.", 
-                      other_recital['recital_text'], "Fourth recital text does not match expected content")
+                      other_recital['recital_text'], "Sixteenth recital text does not match expected content")
 
     def test_get_act(self):
 
