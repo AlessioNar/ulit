@@ -1,6 +1,6 @@
 build/*
 dist/*
 op_cellar.egg-info/*
-op_cellar/__pycache__/*
+**/__pycache__/*
 other_tests.py
 otherpackages.py
