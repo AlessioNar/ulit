@@ -1,7 +1,6 @@
 import unittest
 from op_cellar.parsers.akomantoso import AkomaNtosoParser
 import os
-import xml.etree.ElementTree as ET
 import lxml.etree as etree
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -109,24 +108,20 @@ class TestAkomaNtosoParser(unittest.TestCase):
         # Test second recital content with authorial note
         second_recital = recitals_data[2]
         self.assertEqual(second_recital['eId'], "recs_1__rec_(2)", "Second recital eId does not match expected value")
-        #print(second_recital['recital_text'])
         self.assertEqual("In this respect, Directive 2007/64/EC of the European Parliament and of the Council established basic transparency requirements for fees charged by payment service providers in relation to services offered on payment accounts. This has substantially facilitated the activity of payment service providers, creating uniform rules with respect to the provision of payment services and the information to be provided, reduced the administrative burden and generated cost savings for payment service providers.", 
                       second_recital['recital_text'], "Second recital text does not match expected content")
-        self.assertEqual("OJ L 319, 5.12.2007, p. 1", 
-                      second_recital['recital_text'], "Expected authorial note not found in second recital")
 
         # Test third recital content
         third_recital = recitals_data[3]
         self.assertEqual(third_recital['eId'], "recs_1__rec_(3)", "Third recital eId does not match expected value")
-        self.assertEqual("The smooth functioning of the internal market and the development of a modern, socially inclusive economy", 
+        self.assertEqual("The smooth functioning of the internal market and the development of a modern, socially inclusive economy increasingly depends on the universal provision of payment services. Any new legislation in this regard must be part of a smart economic strategy for the Union, which must effectively take into account the needs of more vulnerable consumers.", 
                       third_recital['recital_text'], "Third recital text does not match expected content")
 
         # Test fourth recital content with date
-        fourth_recital = recitals_data[4]
-        self.assertEqual(fourth_recital['eId'], "recs_1__rec_(4)", "Fourth recital eId does not match expected value")
-        self.assertEqual("the European Parliament in its resolution of 4 July 2012 with recommendations to the Commission", 
-                      fourth_recital['recital_text'], "Fourth recital text does not match expected content")
-        self.assertEqual("4 July 2012", fourth_recital['recital_text'], "Expected date not found in fourth recital")    
+        other_recital = recitals_data[16]
+        self.assertEqual(other_recital['eId'], "recs_1__rec_(16)", "Sixteenth recital eId does not match expected value")
+        self.assertEqual("Consumers would benefit most from information that is concise, standardised and easy to compare between different payment service providers. The tools made available to consumers to compare payment account offers would not have a positive impact if the time invested in going through lengthy lists of fees for different offers outweighed the benefit of choosing the offer that represents the best value. Those tools should be multifold and consumer testing should be conducted. At this stage, fee terminology should only be standardised for the most representative terms and definitions within Member States in order to avoid the risk of excessive information and to facilitate swift implementation.", 
+                      other_recital['recital_text'], "Fourth recital text does not match expected content")
 
     def test_get_act(self):
 

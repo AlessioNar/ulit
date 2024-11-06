@@ -200,50 +200,46 @@ class AkomaNtosoParser(Parser):
             'eId': recitals_intro_eId
         })
 
-        # Recitals 
-        for recital in recitals_section.findall('akn:recital', namespaces=self.namespaces):
+        # Step 1: Remove all <authorialNote> elements from the recitals_section
+        for item in recitals_section.findall('.//akn:authorialNote', namespaces=self.namespaces):
+            note_text = ' '.join(item.itertext()).strip()
             
+            # Find the parent and remove the <authorialNote> element
+            parent = item.getparent()
+            tail_text = item.tail
+
+            if parent is not None:
+                parent.remove(item)
+
+            # Preserve tail text if present
+            if tail_text:
+                if parent.getchildren():
+                    # If there's a previous sibling, add the tail to the last child
+                    previous_sibling = parent.getchildren()[-1]
+                    previous_sibling.tail = (previous_sibling.tail or '') + tail_text
+                else:
+                    # If no siblings, add the tail text to the parent's text
+                    parent.text = (parent.text or '') + tail_text
+
+            # Optional: Print the modified parent XML for debugging purposes
+            #print(etree.tostring(parent, pretty_print=True).decode())
+
+        # Step 2: Process each <recital> element in the recitals_section without the <authorialNote> elements
+        for recital in recitals_section.findall('akn:recital', namespaces=self.namespaces):
             eId = str(recital.get('eId'))
- 
-            # Extract text from each <authorialNote> element within the recital
-            # Extract and remove <authorialNote> elements
-            for item in recital.findall('.//akn:authorialNote', namespaces=self.namespaces):
-                note_text = ' '.join(item.itertext()).strip()  
-                #print(note_text)
-                # Find the parent and remove item from the parent
-                parent = item.getparent()
-                #print(etree.tostring(parent, pretty_print=True).decode())  # Using pretty_print for readability
-                
-                tail_text = item.tail
 
-                if parent is not None:    
-                    parent.remove(item)
+            # Extract text from remaining <akn:p> elements
+            recital_text = ' '.join(' '.join(p.itertext()).strip() for p in recital.findall('akn:p', namespaces=self.namespaces))
 
-                if tail_text:
-                    if parent.getchildren():
-                        # If there's a previous sibling, add the tail to the last child
-                        previous_sibling = parent.getchildren()[-1]
-                        if previous_sibling.tail:
-                            previous_sibling.tail += tail_text
-                        else:
-                            previous_sibling.tail = tail_text
-                    else:
-                        # If there are no other children, add the tail to the parent's text
-                        if parent.text:
-                            parent.text += tail_text
-                        else:
-                            parent.text = tail_text
-                #print('Authorial note removed')    
-                #print(etree.tostring(parent, pretty_print=True).decode())
-
-            recital_text = ''.join(''.join(p.itertext()).strip() for p in recital.findall('akn:p', namespaces=self.namespaces))
-            # Remove double spaces
-            #recital_text = re.sub(r'\s+', ' ', recital_text)
-
+            # Remove any double spaces in the concatenated recital text
+            recital_text = re.sub(r'\s+', ' ', recital_text)
+            #print(recital_text)
+            # Append the cleaned recital text and eId to the list
             recitals_text.append({
                 'recital_text': recital_text,
                 'eId': eId
             })
+
         return recitals_text
     
     def get_act(self) -> None:
