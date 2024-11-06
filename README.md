@@ -83,9 +83,9 @@ The op_cellar package has been inspired by a series of previous packages and bui
 
 ### Use of existing standards and structured formats
 
-* (LegalDocML (Akoma Ntoso))[https://groups.oasis-open.org/communities/tc-community-home2?CommunityKey=3425f20f-b704-4076-9fab-018dc7d3efbe]
-* (LegalHTML)[https://art.uniroma2.it/legalhtml/]
-* (FORMEX)[https://op.europa.eu/documents/3938058/5910419/formex_manual_on_screen_version.html]
+* [LegalDocML (Akoma Ntoso)](https://groups.oasis-open.org/communities/tc-community-home2?CommunityKey=3425f20f-b704-4076-9fab-018dc7d3efbe)
+* [LegalHTML](https://art.uniroma2.it/legalhtml/)
+* [FORMEX](https://op.europa.eu/documents/3938058/5910419/formex_manual_on_screen_version.html)
 
 ## Copyright
 
