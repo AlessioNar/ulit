@@ -24,15 +24,16 @@ class AkomaNtosoParser(Parser):
         }
     
     def remove_node(self, tree, node):
-        # Step 1: Remove all <authorialNote> elements from the recitals_section
+        # Step 1: Remove all node elements from the recitals_section
         for item in tree.findall(node, namespaces=self.namespaces):
-            note_text = ' '.join(item.itertext()).strip()
+            text = ' '.join(item.itertext()).strip()
             
-            # Find the parent and remove the <authorialNote> element
+            # Find the parent and remove the <node> element
             parent = item.getparent()
             tail_text = item.tail
             if parent is not None:
                 parent.remove(item)
+
             # Preserve tail text if present
             if tail_text:
                 if parent.getchildren():
@@ -263,7 +264,27 @@ class AkomaNtosoParser(Parser):
         if self.body is None:
             # Fallback: try without namespace
             self.body = self.root.find('.//body')
+    
+    def get_chapters(self) -> None:
+        """
+        Extracts the chapter elements from the Akoma Ntoso file.
+        """
+        self.chapters = []
         
+        for chapter in self.body.findall('akn:chapter', namespaces=self.namespaces):
+            eId = str(chapter.get('eId'))
+            chapter_num = chapter.find('akn:num').text
+            chapter_heading = chapter.find('akn:heading').text
+
+            # Append the cleaned recital text and eId to the list
+            self.chapters.append({
+                'eId': eId,
+                'chapter_num': chapter_num,
+                'chapter_heading': chapter_heading
+            })
+
+        return None
+
 
     def parse(self, file: str) -> list[dict]:
         """
