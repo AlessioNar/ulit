@@ -1,6 +1,5 @@
 from .parser import Parser
 import re
-#import xml.etree.ElementTree as ET
 from lxml import etree
 
 class AkomaNtosoParser(Parser):
@@ -25,7 +24,9 @@ class AkomaNtosoParser(Parser):
         # Define the namespace mapping
         self.namespaces = {
             'akn': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
+            'an': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
             'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
+
 
         }
     
@@ -45,24 +46,25 @@ class AkomaNtosoParser(Parser):
             lxml.etree._Element
                 The modified XML tree with specified nodes removed.
         """
-        for item in tree.findall(node, namespaces=self.namespaces):
-            text = ' '.join(item.itertext()).strip()
-            
-            # Find the parent and remove the <node> element
-            parent = item.getparent()
-            tail_text = item.tail
-            if parent is not None:
-                parent.remove(item)
+        if tree.findall(node, namespaces=self.namespaces) is not None:
+            for item in tree.findall(node, namespaces=self.namespaces):
+                text = ' '.join(item.itertext()).strip()
+                
+                # Find the parent and remove the <node> element
+                parent = item.getparent()
+                tail_text = item.tail
+                if parent is not None:
+                    parent.remove(item)
 
-            # Preserve tail text if present
-            if tail_text:
-                if parent.getchildren():
-                    # If there's a previous sibling, add the tail to the last child
-                    previous_sibling = parent.getchildren()[-1]
-                    previous_sibling.tail = (previous_sibling.tail or '') + tail_text
-                else:
-                    # If no siblings, add the tail text to the parent's text
-                    parent.text = (parent.text or '') + tail_text
+                # Preserve tail text if present
+                if tail_text:
+                    if parent.getchildren():
+                        # If there's a previous sibling, add the tail to the last child
+                        previous_sibling = parent.getchildren()[-1]
+                        previous_sibling.tail = (previous_sibling.tail or '') + tail_text
+                    else:
+                        # If no siblings, add the tail text to the parent's text
+                        parent.text = (parent.text or '') + tail_text
         
         return tree
 
@@ -544,5 +546,7 @@ class AkomaNtosoParser(Parser):
         """
         self.get_root(file)
         self.get_body()
+        self.get_chapters()
+        self.get_articles()
 
 
