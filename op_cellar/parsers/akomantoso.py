@@ -548,5 +548,6 @@ class AkomaNtosoParser(Parser):
         self.get_body()
         self.get_chapters()
         self.get_articles()
+        self.get_preface()
 
 
