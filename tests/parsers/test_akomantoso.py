@@ -3,6 +3,7 @@ from op_cellar.parsers.akomantoso import AkomaNtosoParser
 import os
 import lxml.etree as etree
 
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 file_path = os.path.join(DATA_DIR, "32014L0092.akn")
 
@@ -162,7 +163,6 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
         # Call get_chapters to populate self.chapters
         self.parser.get_chapters()
-        print(self.parser.chapters)
 
         # Expected chapters data
         expected_chapters = [
@@ -177,6 +177,17 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
         # Assert that self.chapters matches expected output
         self.assertEqual(self.parser.chapters, expected_chapters, "Chapters data does not match expected content")
+    
+    def test_get_articles(self):
+
+        self.parser.get_root(file_path)
+        self.parser.get_body()
+
+        # Call get_chapters to populate self.chapters
+        self.parser.get_articles()
+        #pprint(self.parser.articles)
+        # Assert that self.chapters matches expected output
+        self.assertEqual(self.parser.articles, False, "Chapters data does not match expected content")
 
 if __name__ == '__main__':
     unittest.main()
