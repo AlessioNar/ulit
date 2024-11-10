@@ -45,18 +45,12 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_preface(self):
         """Test the content extracted from the preface section."""
-        preface_text = self.parser.get_preface()
-        self.assertIsNotNone(preface_text, "Preface element not found")
+        self.parser.get_preface()
+        self.assertIsNotNone(self.parser.preface, "Preface element not found")
         
-        expected_preface = [
-            "Directive 2014/92/EU of the European Parliament and of the Council",
-            "of 23 July 2014",
-            "on the comparability of fees related to payment accounts, payment account switching and access to payment accounts with basic features",
-            "(Text with EEA relevance)"
-        ]
-        for i, expected in enumerate(expected_preface):
-            with self.subTest(paragraph=i):
-                self.assertEqual(preface_text[i], expected)
+        expected_preface = "Directive 2014/92/EU of the European Parliament and of the Council of 23 July 2014 on the comparability of fees related to payment accounts, payment account switching and access to payment accounts with basic features (Text with EEA relevance)"
+
+        self.assertEqual(self.parser.preface, expected_preface)
 
     def test_get_preamble(self):
         """Test retrieval of preamble data from the XML file."""

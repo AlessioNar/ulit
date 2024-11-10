@@ -251,7 +251,7 @@ class AkomaNtosoParser(Parser):
             # Add other elements as needed
         }
     
-    def get_preface(self):
+    def get_preface(self) -> None:
         """
             Extracts paragraphs from the preface section of the document.
 
@@ -271,7 +271,7 @@ class AkomaNtosoParser(Parser):
             paragraph_text = ''.join(p.itertext()).strip()
             paragraphs.append(paragraph_text)
 
-        return paragraphs
+        self.preface = ' '.join(paragraphs)
     
     def get_preamble(self):
         """
