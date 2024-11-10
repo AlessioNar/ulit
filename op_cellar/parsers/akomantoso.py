@@ -2,10 +2,6 @@ from .parser import Parser
 import re
 #import xml.etree.ElementTree as ET
 from lxml import etree
-from collections import defaultdict
-from pprint import pprint
-
-
 
 class AkomaNtosoParser(Parser):
     """
@@ -254,7 +250,15 @@ class AkomaNtosoParser(Parser):
         }
     
     def get_preface(self):
-        """Extracts paragraphs and nested elements within the <preface> tag."""
+        """
+            Extracts paragraphs from the preface section of the document.
+
+            Returns
+            -------
+            list or None
+                List of strings containing the text content of each paragraph
+                in the preface. Returns None if no preface is found.
+            """
         preface = self.root.find('.//akn:preface', namespaces=self.namespaces)
         if preface is None:
             return None
@@ -268,7 +272,17 @@ class AkomaNtosoParser(Parser):
         return paragraphs
     
     def get_preamble(self):
-        """Extracts the high-level preamble data including formula text and citations."""
+        """
+        Extracts complete preamble data from the document.
+
+        Returns
+        -------
+        dict
+            Dictionary containing preamble components with keys:
+            - 'formula': Formula text
+            - 'citations': List of citations
+            - 'recitals': List of recitals
+        """
         preamble_data = {
             'formula': self.get_preamble_formula(),
             'citations': self.get_preamble_citations(),
@@ -277,8 +291,15 @@ class AkomaNtosoParser(Parser):
         return preamble_data
     
     def get_preamble_formula(self):
+        """
+        Extracts formula text from the preamble.
 
-        """Extracts the bare text from the <formula> element within <preamble>."""
+        Returns
+        -------
+        str or None
+            Concatenated text from all paragraphs within the formula element.
+            Returns None if no formula is found.
+        """
         formula = self.root.find('.//akn:preamble/akn:formula', namespaces=self.namespaces)
         if formula is None:
             return None
@@ -288,40 +309,48 @@ class AkomaNtosoParser(Parser):
         return formula_text
     
     def get_preamble_citations(self):
-        """Extracts text from each <citation> element within <citations> in <preamble>."""
+        """
+        Extracts citations from the preamble.
+
+        Returns
+        -------
+        list or None
+            List of dictionaries containing citation text without the associated
+            authorial notes. Returns None if no citations are found.
+        """
         citations_section = self.root.find('.//akn:preamble/akn:citations', namespaces=self.namespaces)
         if citations_section is None:
             return None
+        # Removing all authorialNote nodes
+        citations_section = self.remove_node(citations_section, './/akn:authorialNote')
 
         citations_text = []
         for citation in citations_section.findall('akn:citation', namespaces=self.namespaces):
-            # Collect bare text within each <p> in <citation>
-            
+            # Collect bare text within each <p> in <citation>            
             citation_text = "".join(citation.itertext()).strip()
-            
-            # Add any additional text from <authorialNote> within <citation>
-            authorial_notes = []
-            for note in citation.findall('.//akn:authorialNote/akn:p', namespaces=self.namespaces):
-                note_text = ''.join(note.itertext()).strip()
-                authorial_notes.append(note_text)
 
             citations_text.append({
                 'citation_text': citation_text,
-                'authorial_notes': authorial_notes
             })
         
         return citations_text
     
     def get_preamble_recitals(self):
-        """Extracts text from each <recital> element within <recitals> in <preamble>."""
-        
+        """
+        Extracts recitals from the preamble.
+
+        Returns
+        -------
+        list or None
+            List of dictionaries containing recital text and eId for each
+            recital. Returns None if no recitals are found.
+        """
         recitals_section = self.root.find('.//akn:preamble/akn:recitals', namespaces=self.namespaces)
         if recitals_section is None:
             return None
 
         recitals_text = []
-        
-        
+                
         # Intro
         recitals_intro = recitals_section.find('akn:intro', namespaces=self.namespaces)
         recitals_intro_eId = recitals_intro.get('eId')
@@ -354,7 +383,12 @@ class AkomaNtosoParser(Parser):
     
     def get_act(self) -> None:
         """
-        Extracts the act element from the Akoma Ntoso file.
+        Extracts the act element from the document.
+
+        Returns
+        -------
+        None
+            Updates the instance's act attribute with the found act element.
         """
         # Use the namespace-aware find
         self.act = self.root.find('.//akn:act', namespaces=self.namespaces)
@@ -364,7 +398,12 @@ class AkomaNtosoParser(Parser):
         
     def get_body(self) -> None:
         """
-        Extracts the body element from the Akoma Ntoso file.
+        Extracts the body element from the document.
+
+        Returns
+        -------
+        None
+            Updates the instance's body attribute with the found body element.
         """
         # Use the namespace-aware find
         self.body = self.root.find('.//akn:body', namespaces=self.namespaces)
@@ -373,7 +412,17 @@ class AkomaNtosoParser(Parser):
             self.body = self.root.find('.//body')
     
     def get_chapters(self) -> None:        
-        """Extracts chapters from the XML, including eId, num, and heading if available."""
+        """
+        Extracts chapter information from the document.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing chapter data with keys:
+            - 'eId': Chapter identifier
+            - 'chapter_num': Chapter number
+            - 'chapter_heading': Chapter heading text
+        """
         self.chapters = []  # Reset chapters list
         
         # Find all <chapter> elements in the body
@@ -389,10 +438,21 @@ class AkomaNtosoParser(Parser):
                 'chapter_heading': ''.join(chapter_heading.itertext()).strip() if chapter_heading is not None else None
             })
 
-        return self.chapters
+        return None
     
     def get_articles(self) -> None:
-        """Extracts articles from the XML, including eId, num, and heading/title if available."""
+        """
+        Extracts article information from the document.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing article data with keys:
+            - 'eId': Article identifier
+            - 'article_num': Article number
+            - 'article_title': Article title
+            - 'article_text': List of dictionaries with eId and text content
+        """
         self.articles = []  # Reset articles list
 
         # Removing all authorialNote nodes
@@ -434,7 +494,21 @@ class AkomaNtosoParser(Parser):
         return self.articles
     
     def get_text_by_eId(self, node):
-        """Parses all <p> tags and groups them by the closest parent with an eId attribute."""
+        """
+        Groups paragraph text by their nearest parent element with an eId attribute.
+
+        Parameters
+        ----------
+        node : lxml.etree._Element
+            XML node to process for text extraction.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing:
+            - 'eId': Identifier of the nearest parent with an eId
+            - 'text': Concatenated text content
+        """
         elements = []
         # Find all <p> elements
         for p in node.findall('.//akn:p', namespaces=self.namespaces):
