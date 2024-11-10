@@ -1,11 +1,11 @@
 [project]
 name = "op_cellar"
-version = "0.0.1-dev"
+version = "0.0.2"
 description = "A generic package to query and retrieve documents from Cellar, the common data repository of the Publications Office of the European Union."
 
 [tool.poetry]
 name = "op_cellar"
-version = "0.0.1-dev"
+version = "0.0.2"
 description = "A generic package to query and retrieve documents from Cellar, the common data repository of the Publications Office of the European Union."
 authors = ["AlessioNar <alessio.nardin@gmail.com>"]
 license = "EUPL 1.2"

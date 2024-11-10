@@ -25,5 +25,5 @@ setup(
         'Programming Language :: Python :: 3.11',
     ],
 
-    version="0.0.1-dev",
+    version="0.0.2",
 )
