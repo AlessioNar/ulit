@@ -2,20 +2,30 @@ from .parser import Parser
 import re
 #import xml.etree.ElementTree as ET
 from lxml import etree
+from collections import defaultdict
+from pprint import pprint
+
 
 
 class AkomaNtosoParser(Parser):
     """
-    A parser for Akoma Ntoso files, extracting and processing their content.
+    A parser for processing and extracting content from Akoma Ntoso XML files.
+
+    The parser handles XML documents following the Akoma Ntoso schema for legal documents,
+    providing methods to extract various components like metadata, preamble, articles,
+    and chapters.
+
+    Attributes
+    ----------
+    namespaces : dict
+        Dictionary mapping namespace prefixes to their URIs.
+
     """
-    def __init__(self, celex=None):
+    def __init__(self):
         """
         Initializes the parser
         
-        Args:
-            celex (str): Optional CELEX identifier for the document.
         """
-        self.p_elements = []
         # Define the namespace mapping
         self.namespaces = {
             'akn': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
@@ -24,7 +34,21 @@ class AkomaNtosoParser(Parser):
         }
     
     def remove_node(self, tree, node):
-        # Step 1: Remove all node elements from the recitals_section
+        """
+            Removes specified nodes from the XML tree while preserving their tail text.
+
+            Parameters
+            ----------
+            tree : lxml.etree._Element
+                The XML tree or subtree to process.
+            node : str
+                XPath expression identifying the nodes to remove.
+
+            Returns
+            -------
+            lxml.etree._Element
+                The modified XML tree with specified nodes removed.
+        """
         for item in tree.findall(node, namespaces=self.namespaces):
             text = ' '.join(item.itertext()).strip()
             
@@ -49,10 +73,17 @@ class AkomaNtosoParser(Parser):
     
     def get_root(self, file: str):
         """
-        Parses the XML file and returns the root element.
-        
-        Args:
-            file (str): Path to the XML file
+        Parses an XML file and returns its root element.
+
+        Parameters
+        ----------
+        file : str
+            Path to the XML file.
+
+        Returns
+        -------
+        lxml.etree._Element
+            Root element of the parsed XML document.
         """
         with open(file, 'r', encoding='utf-8') as f:
             tree = etree.parse(f)
@@ -60,7 +91,18 @@ class AkomaNtosoParser(Parser):
             return self.root
         
     def get_meta_identification(self):
-        """Extracts data from the <identification> element within <meta>."""
+        """
+        Extracts identification metadata from the XML document.
+
+        Retrieves data from the <identification> element within <meta>,
+        including FRBR Work, Expression, and Manifestation information.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing FRBR metadata with keys 'work', 'expression',
+            and 'manifestation'. Returns None if no identification data is found.
+        """
         identification = self.root.find('.//akn:meta/akn:identification', namespaces=self.namespaces)
         if identification is None:
             return None
@@ -73,7 +115,20 @@ class AkomaNtosoParser(Parser):
         return frbr_data
     
     def _get_frbr_work(self, identification):
-        """Extracts <FRBRWork> related data."""
+        """
+        Extracts FRBR Work metadata from the identification element.
+
+        Parameters
+        ----------
+        identification : lxml.etree._Element
+            The identification element containing FRBR Work data.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing FRBR Work metadata including URIs, dates,
+            and other work-level identifiers. Returns None if no work data is found.
+        """
         frbr_work = identification.find('akn:FRBRWork', namespaces=self.namespaces)
         if frbr_work is None:
             return None
@@ -89,7 +144,22 @@ class AkomaNtosoParser(Parser):
         }
     
     def _get_frbr_expression(self, identification):
-        """Extracts <FRBRExpression> related data."""
+        """
+        Extracts FRBR Expression metadata from the identification element.
+
+        Parameters
+        ----------
+        identification : lxml.etree._Element
+            The identification element containing FRBR Expression data.
+        
+        Returns
+        -------
+        dict or None
+            Dictionary containing FRBR Expression metadata including URIs, dates,
+            language, and other expression-level identifiers. Returns None if no
+            expression data is found.
+        """
+
         frbr_expression = identification.find('akn:FRBRExpression', namespaces=self.namespaces)
         if frbr_expression is None:
             return None
@@ -103,7 +173,21 @@ class AkomaNtosoParser(Parser):
         }
     
     def _get_frbr_manifestation(self, identification):
-        """Extracts <FRBRManifestation> related data."""
+        """
+        Extracts FRBR Manifestation metadata from the identification element.
+
+        Parameters
+        ----------
+        identification : lxml.etree._Element
+            The identification element containing FRBR Manifestation data.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing FRBR Manifestation metadata including URIs,
+            dates, and other manifestation-level identifiers. Returns None if
+            no manifestation data is found.
+        """
         frbr_manifestation = identification.find('akn:FRBRManifestation', namespaces=self.namespaces)
         if frbr_manifestation is None:
             return None
@@ -116,7 +200,18 @@ class AkomaNtosoParser(Parser):
         }
     
     def get_meta_references(self):
-        """Extracts data from the <references> element within <meta>."""
+        """
+        Extracts reference metadata from the XML document.
+
+        Retrieves data from the <references> element within <meta>,
+        specifically focusing on TLCOrganization elements.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing reference metadata including eId, href,
+            and showAs attributes. Returns None if no reference data is found.
+        """
         references = self.root.find('.//akn:meta/akn:references/akn:TLCOrganization', namespaces=self.namespaces)
         if references is None:
             return None
@@ -128,7 +223,19 @@ class AkomaNtosoParser(Parser):
         }
     
     def get_meta_proprietary(self):
-        """Extracts data from the <proprietary> element within <meta>."""
+        """
+        Extracts proprietary metadata from the XML document.
+
+        Retrieves data from the <proprietary> element within <meta>,
+        including document reference information.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing proprietary metadata including file, collection,
+            year, language, and sequence number. Returns None if no proprietary
+            data is found.
+        """
         proprietary = self.root.find('.//akn:meta/akn:proprietary', namespaces=self.namespaces)
         if proprietary is None:
             return None
@@ -283,7 +390,73 @@ class AkomaNtosoParser(Parser):
             })
 
         return self.chapters
+    
+    def get_articles(self) -> None:
+        """Extracts articles from the XML, including eId, num, and heading/title if available."""
+        self.articles = []  # Reset articles list
 
+        # Removing all authorialNote nodes
+        self.body = self.remove_node(self.body, './/akn:authorialNote')
+
+
+        # Find all <article> elements in the XML
+        for article in self.body.findall('.//akn:article', namespaces=self.namespaces):
+            eId = article.get('eId')
+            
+            # Find the main <num> element representing the article number
+            article_num = article.find('akn:num', namespaces=self.namespaces)
+            article_num_text = article_num.text if article_num is not None else None
+
+            # Find a secondary <num> or <heading> to represent the article title or subtitle, if present
+            article_title_element = article.find('akn:heading', namespaces=self.namespaces)
+            if article_title_element is None:
+                # If <heading> is not found, use the second <num> as the title if it exists
+                article_title_element = article.findall('akn:num', namespaces=self.namespaces)[1] if len(article.findall('akn:num', namespaces=self.namespaces)) > 1 else None
+            # Get the title text 
+            article_title_text = article_title_element.text if article_title_element is not None else None
+
+            # So I need to find another parsing strategy as the non-normative nature of Akoma Ntoso makes it more complicated to parse it.
+            # This function first finds all of the p tags
+            # Then Identifies the closest parent of the p tag containing an attribute eId
+            # Then it concatenates p tags based on common eIds
+            # And finally creates a list of dictionaries composed by the eId and the text of each element
+            article_text = self.get_text_by_eId(article)
+        
+            # Append the article data to the articles list
+            self.articles.append({
+                'eId': eId,
+                'article_num': article_num_text,
+                'article_title': article_title_text,
+                # This is not really text - rather a list of dictionaries composed by the eId and the text of each element
+                'article_text': article_text
+            })
+
+        return self.articles
+    
+    def get_text_by_eId(self, node):
+        """Parses all <p> tags and groups them by the closest parent with an eId attribute."""
+        elements = []
+        # Find all <p> elements
+        for p in node.findall('.//akn:p', namespaces=self.namespaces):
+            # Traverse up to find the nearest parent with an eId
+            current_element = p
+            eId = None
+            while current_element is not None:
+                eId = current_element.get('eId')
+                if eId:
+                    break
+                current_element = current_element.getparent()  # Traverse up
+
+            # If an eId is found, add <p> text to the eId_text_map
+            if eId:
+                # Capture the full text within the <p> tag, including nested elements
+                p_text = ''.join(p.itertext()).strip()
+                element = {
+                    'eId': eId,
+                    'text': p_text
+                }
+                elements.append(element)
+        return elements
 
     def parse(self, file: str) -> list[dict]:
         """
@@ -298,40 +471,4 @@ class AkomaNtosoParser(Parser):
         self.get_root(file)
         self.get_body()
 
-
-
-    def extract_provisions(self) -> list[dict]:
-        """
-        Extracts provisions from paragraph elements, returning sentences with their eId.
-        
-        Returns:
-            list[dict]: List of provisions with CELEX ID, sentence text, and eId.
-        """
-        provisions = []
-        for p_element in self.p_elements:
-            eId, sentences = self.process_element(p_element)
-            for sentence in sentences:
-                provisions.append({
-                    "celex": self.celex,
-                    "eId": eId,
-                    "sentence": sentence,
-                })
-        return provisions
-
-    def process_element(self, element) -> tuple:
-        """
-        Extracts eId and sentences from an XML element after masking references and dates.
-        
-        Args:
-            element (ET.Element): The paragraph element.
-        
-        Returns:
-            tuple[str, list[str]]: eId and list of sentences.
-        """
-        eId = element.get("eId", "")
-        element, refs, dates = self.mask_references_and_dates(element)
-        text = self.merge_dom_children(element)
-        sentences = self.process_text(text)
-        sentences = self.unmask_element(sentences, refs, dates)
-        return eId, sentences
 
