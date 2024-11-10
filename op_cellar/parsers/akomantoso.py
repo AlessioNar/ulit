@@ -265,25 +265,24 @@ class AkomaNtosoParser(Parser):
             # Fallback: try without namespace
             self.body = self.root.find('.//body')
     
-    def get_chapters(self) -> None:
-        """
-        Extracts the chapter elements from the Akoma Ntoso file.
-        """
-        self.chapters = []
+    def get_chapters(self) -> None:        
+        """Extracts chapters from the XML, including eId, num, and heading if available."""
+        self.chapters = []  # Reset chapters list
         
-        for chapter in self.body.findall('akn:chapter', namespaces=self.namespaces):
-            eId = str(chapter.get('eId'))
-            chapter_num = chapter.find('akn:num').text
-            chapter_heading = chapter.find('akn:heading').text
-
-            # Append the cleaned recital text and eId to the list
+        # Find all <chapter> elements in the body
+        for chapter in self.root.findall('.//akn:chapter', namespaces=self.namespaces):
+            eId = chapter.get('eId')
+            chapter_num = chapter.find('akn:num', namespaces=self.namespaces)
+            chapter_heading = chapter.find('akn:heading', namespaces=self.namespaces)
+            
+            # Add chapter data to chapters list
             self.chapters.append({
                 'eId': eId,
-                'chapter_num': chapter_num,
-                'chapter_heading': chapter_heading
+                'chapter_num': chapter_num.text if chapter_num is not None else None,
+                'chapter_heading': ''.join(chapter_heading.itertext()).strip() if chapter_heading is not None else None
             })
 
-        return None
+        return self.chapters
 
 
     def parse(self, file: str) -> list[dict]:
