@@ -1,10 +1,10 @@
-# `op_cellar`, a Python package for the CELLAR Semantic Repository of the Publications Office of the European Union
+# `ulit`, The Universal Legal Informatics Toolkit
 
 [![Publish Package to PyPI](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml/badge.svg)](https://github.com/AlessioNar/op_cellar/actions/workflows/publish.yml)
 
 ## 1. Introduction
 
-The `op_cellar` package is a Python client that provides a wrapper to query and retrieve documents among the various endpoints of the Publications Office of the European Union.
+The `ulit` package provides utilities to work with legal data in a way that legal informatics practitioners can focus on addding value. 
 
 ## 2. Installation
 
