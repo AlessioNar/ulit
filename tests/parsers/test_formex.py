@@ -13,10 +13,10 @@ class TestFormex4Parser(unittest.TestCase):
     def test_parse_metadata(self):
         self.maxDiff = None  # Allow the full diff to be displayed
         file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
-        with open(file_path, 'r', encoding='utf-8') as f:
-            tree = ET.parse(f)
-            root = tree.getroot()
-        result = self.formex_parser._parse_metadata(root)
+        
+        self.formex_parser.load_xml(file_path)
+
+        result = self.formex_parser.get_metadata()
         expected = {
             "file": "L_2011334EN.01002501.doc.xml",
             "collection": "L",
@@ -44,7 +44,7 @@ class TestFormex4Parser(unittest.TestCase):
             tree = ET.parse(f)
             root = tree.getroot()
         
-        result = self.formex_parser._parse_title(root)
+        result = self.formex_parser.get_title(root)
         expected = (
             "Commission Implementing Regulation (EU) No 1319/2011 of 15 December 2011 "
             "fixing representative prices in the poultrymeat and egg sectors and for egg "
@@ -62,7 +62,7 @@ class TestFormex4Parser(unittest.TestCase):
             tree = ET.parse(f)
             root = tree.getroot()
         
-        result = self.formex_parser._parse_preamble(root)
+        result = self.formex_parser.get_preamble(root)
         
         # Expected preamble structure
         # @todo - see main function
@@ -91,28 +91,26 @@ class TestFormex4Parser(unittest.TestCase):
         self.maxDiff = None  # Allow full diff if needed
         file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
         
-        # Parse the XML tree and pass the root to _parse_articles
-        with open(file_path, 'r', encoding='utf-8') as f:
-            tree = ET.parse(f)
-            root = tree.getroot()
+        self.formex_parser.load_xml(file_path)
         
-        result = self.formex_parser._parse_articles(root)
+        self.formex_parser.get_articles()
+        
         
         # Expected articles based on sample data in XML file
         expected = [
             {
-                "identifier": "001",
-                "title": "Article 1",
-                "content": "Annex I to Regulation (EC) No 1484/95 is replaced by the Annex to this Regulation."
+                "eId": "001",
+                "article_num": "Article 1",
+                "article_text": "Annex I to Regulation (EC) No 1484/95 is replaced by the Annex to this Regulation."
             },
             {
-                "identifier": "002",
-                "title": "Article 2",
-                "content": "This Regulation shall enter into force on the day of its publication in the Official Journal of the European Union."
+                "eId": "002",
+                "article_num": "Article 2",
+                "article_text": "This Regulation shall enter into force on the day of its publication in the Official Journal of the European Union."
             }
         ]
         
-        self.assertEqual(result, expected)
+        self.assertEqual(self.formex_parser.articles, expected)
 
 # Run the tests
 if __name__ == "__main__":
