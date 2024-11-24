@@ -92,6 +92,7 @@ class TestFormex4Parser(unittest.TestCase):
         file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
         
         self.formex_parser.load_xml(file_path)
+        self.formex_parser.get_body()
         
         self.formex_parser.get_articles()
         

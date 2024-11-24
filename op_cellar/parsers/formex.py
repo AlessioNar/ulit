@@ -1,11 +1,112 @@
 from .parser import Parser
 import re
 from lxml import etree
+from collections import OrderedDict
+import re
+from datetime import date
+
+from lxml import etree, objectify
+from lxml.builder import ElementMaker
+from iso8601 import parse_date
+
+from .uri import FrbrUri
+
+
+# Create a new objectify parser that doesn't remove blank text nodes
+objectify_parser = etree.XMLParser()
+objectify_parser.set_element_class_lookup(objectify.ObjectifyElementClassLookup())
+
+FMX_NAMESPACES = {
+            'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
+        }
+
+class AkomaNtosoDocument():
+    """ Base class for Akoma Ntoso documents.
+
+    :ivar root: :class:`lxml.objectify.ObjectifiedElement` root of the XML document
+    :ivar namespace: primary XML namespace
+    """
+    _parser = objectify_parser
+    # the "source" attribute used on some elements where it is required.
+    # contains: name, id, url
+    source = ["cobalt", "cobalt", "https://github.com/laws-africa/cobalt"]
+
+    def __init__(self, xml=None):
+        if isinstance(xml, str):
+            xml = xml.encode('utf-8')
+        self.parse(xml)
+        self.maker = objectify.ElementMaker(annotate=False, namespace=self.namespace, nsmap=self.root.nsmap)
+
+    def parse(self, xml, document_type=None):
+        """ Parse XML and ensure it's Akoma Ntoso with a known namespace. Raises ValueError on error.
+        """
+        self.root = objectify.fromstring(xml, parser=self._parser)
+
+        # ensure the root element is correct
+        name = self.root.tag.split('}', 1)[-1]
+        if name != 'akomaNtoso':
+            raise ValueError(f"XML root element must be akomaNtoso, but got {name} instead")
+
+        self.namespace = self.get_namespace()
+
+    def to_xml(self, *args, encoding='utf-8', **kwargs):
+        return etree.tostring(self.root, *args, encoding=encoding, **kwargs)
+
+    def get_namespace(self):
+        akn_namespaces = [ns[1] for ns in sorted(list(FMX_NAMESPACES.items()), reverse=True)]
+        namespaces = list(self.root.nsmap.values())
+        for ns in akn_namespaces:
+            if ns in namespaces:
+                return ns
+
+        raise ValueError(f"Expected to find one of the following Akoma Ntoso XML namespaces: {', '.join(akn_namespaces)}. Only these namespaces were found: {', '.join(namespaces)}")
+
+    def ensure_element(self, name, after, at=None, attribs=None):
+        """ Helper to get an element if it exists, or create it if it doesn't.
+
+        :param name: dotted path from `self` or `at`
+        :param after: element after which to place the new element if it doesn't exist
+        :param at: element at which to start looking, (defaults to self if None)
+        """
+        node = self.get_element(name, root=at)
+        if node is None:
+            # TODO: what if nodes in the path don't exist?
+            node = self.make_element(name.split('.')[-1], attribs)
+            after.addnext(node)
+
+        return node
+
+    def get_element(self, name, root=None):
+        """ Lookup a dotted-path element, start at root (or self if root is None). Returns None if the element doesn't exist.
+        """
+        parts = name.split('.')
+        # this avoids an lxml warning about testing against None
+        if root is not None:
+            node = root
+        else:
+            node = self
+
+        for p in parts:
+            try:
+                node = getattr(node, p)
+            except AttributeError:
+                return None
+        return node
+
+    def make_element(self, elem, attribs=None):
+        attribs = attribs or {}
+        return getattr(self.maker, elem)(**attribs)
 
 class Formex4Parser(Parser):
     def __init__(self):
-        pass
+        """
+        Initializes the parser
+        
+        """
+        # Define the namespace mapping
+        self.namespaces = [FMX_NAMESPACES]
 
+            
     def load_xml(self, file):
         """
         """
@@ -115,6 +216,22 @@ class Formex4Parser(Parser):
 
         
         return preamble_data
+    
+    def get_body(self) -> None:
+        """
+        Extracts the enacting terms element from the document.
+
+        Returns
+        -------
+        None
+            Updates the instance's body attribute with the found body element.
+        """
+        # Use the namespace-aware find
+        self.body = self.root.find('.//fmx:ENACTING.TERMS', namespaces=self.namespaces)
+        if self.body is None:
+            # Fallback: try without namespace
+            self.body = self.root.find('.//ENACTING.TERMS')
+    
 
     def get_articles(self):
         """
@@ -127,16 +244,16 @@ class Formex4Parser(Parser):
         list: Articles with identifier and content.
         """
         self.articles = []
-        enacting_terms = self.root.find('ENACTING.TERMS')
-        
-        if enacting_terms is not None:
-            for article in enacting_terms.findall('ARTICLE'):
+        if self.body is not None:
+            for article in self.body.findall('.//ARTICLE'):
                 article_data = {
                     "eId": article.get("IDENTIFIER"),
-                    "article_num": article.findtext('TI.ART'),
-                    "article_text": " ".join("".join(alinea.itertext()).strip() for alinea in article.findall('ALINEA'))
+                    "article_num": article.findtext('.//TI.ART'),
+                    "article_text": " ".join("".join(alinea.itertext()).strip() for alinea in article.findall('.//ALINEA'))
                 }
                 self.articles.append(article_data)
+        else:
+            print('No enacting terms XML tag has been found')
         
 
     def parse(self, file):
@@ -150,4 +267,5 @@ class Formex4Parser(Parser):
         dict: Parsed data containing metadata, title, preamble, and articles.
         """
         self.load_xml(file)
+        self.get_body()
         self.get_articles()
