@@ -54,8 +54,8 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_preamble(self):
         """Test retrieval of preamble data from the XML file."""
-        preamble_data = self.parser.get_preamble()
-        self.assertIsNotNone(preamble_data, "Preamble data not found")
+        self.parser.get_preamble()
+        self.assertIsNotNone(self.parser.preamble, "Preamble data not found")
 
     def test_get_preamble_formula(self):
         """Test extraction of formula text within the preamble."""
@@ -122,6 +122,20 @@ class TestAkomaNtosoParser(unittest.TestCase):
         self.parser.get_articles()
         
         self.assertEqual(len(self.parser.articles), 31, "Incorrect number of articles extracted")
+    
+    def test_get_conclusions(self):
+        # Expected output
+        expected_conclusions = {
+            'date': '23 July 2014',
+            'signatures': [
+                ["Done at Brussels, 23 July 2014."],
+                ['For the European Parliament', 'The President', 'M. Schulz'],
+                ['For the Council', 'The President', 'S. Gozi']
+            ]
+        }
+        # Test get_conclusions method
+        self.parser.get_conclusions()
+        self.assertEqual(self.parser.conclusions, expected_conclusions, "Parsed conclusions do not match expected output")
 
 if __name__ == '__main__':
     unittest.main()
