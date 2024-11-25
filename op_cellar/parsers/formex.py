@@ -7,9 +7,6 @@ from datetime import date
 
 from lxml import etree, objectify
 from lxml.builder import ElementMaker
-from iso8601 import parse_date
-
-from .uri import FrbrUri
 
 
 # Create a new objectify parser that doesn't remove blank text nodes
@@ -104,7 +101,7 @@ class Formex4Parser(Parser):
         
         """
         # Define the namespace mapping
-        self.namespaces = [FMX_NAMESPACES]
+        self.namespaces = FMX_NAMESPACES
 
             
     def load_xml(self, file):

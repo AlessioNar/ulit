@@ -10,7 +10,7 @@ CELLAR IDs from a CSV file.
 import json
 from SPARQLWrapper import SPARQLWrapper, JSON, POST
 
-def send_sparql_query(sparql_query_filepath, response_file):
+def send_sparql_query(sparql_query_filepath, celex=None):
     """
     Sends a SPARQL query to the EU SPARQL endpoint and stores the results in a JSON file.
 
@@ -44,14 +44,13 @@ def send_sparql_query(sparql_query_filepath, response_file):
         with open(sparql_query_filepath, 'r') as file:
             sparql_query = file.read()
         
-        # print('SPARQL_PATH:', sparql_query)
+        if celex is not None:
+            # Option 1: If you want to use format()
+            sparql_query = sparql_query.replace("{CELEX}", celex) 
 
-        # send query to cellar endpoint and retrieve results
-        results = get_results_table(sparql_query)
+            # send query to cellar endpoint and retrieve results
+            results = get_results_table(sparql_query)
 
-        # Store results in the response file
-        with open(response_file, 'w') as outfile:
-            json.dump(results, outfile, indent=4)
         return results
     
     except FileNotFoundError as e:

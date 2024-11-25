@@ -11,7 +11,7 @@ import json
 BASE_URL = 'http://publications.europa.eu/resource/cellar/'
 LOG_DIR = 'logs/'
 
-def download_documents(results, download_dir, nthreads=1):
+def download_documents(results, download_dir, format=None, nthreads=1):
     """
     Download Cellar documents in parallel using multiple threads.
 
@@ -32,7 +32,7 @@ def download_documents(results, download_dir, nthreads=1):
     The function uses a separate thread for each subset of Cellar ids.
     The number of threads can be adjusted by modifying the `nthreads` parameter.
     """
-    cellar_ids = get_cellar_ids_from_json_results(results)
+    cellar_ids = get_cellar_ids_from_json_results(results, format)
 
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
@@ -44,7 +44,7 @@ def download_documents(results, download_dir, nthreads=1):
     [t.start() for t in threads]
     [t.join() for t in threads]
 
-def get_cellar_ids_from_json_results(cellar_results):
+def get_cellar_ids_from_json_results(cellar_results, format):
     """
     Extract CELLAR ids from a JSON dictionary.
 
@@ -82,9 +82,13 @@ def get_cellar_ids_from_json_results(cellar_results):
     >>> print(cellar_ids)
     ['some_id', 'another_id']
     """
+    cellar_uris = []
     results_list = cellar_results["results"]["bindings"]
-    cellar_ids_list = [results_list[i]["cellarURIs"]["value"].split("cellar/")[1] for i in range(len(results_list))]
-    return cellar_ids_list
+    for i, file in enumerate(results_list):
+        if file['format']['value'] == format:
+            cellar_uris.append(file['cellarURIs']["value"].split("cellar/")[1])
+
+    return cellar_uris
 
 # Function to process a list of ids to download the corresponding zip files
 def process_range(ids: list, folder_path: str):
