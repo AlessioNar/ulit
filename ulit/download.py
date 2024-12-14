@@ -34,8 +34,7 @@ def download_documents(results, download_dir, log_dir, format=None):
 
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-
-    document_paths = process_range(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
+    document_paths = download_document(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
     
     return document_paths
 
@@ -87,7 +86,7 @@ def get_cellar_ids_from_json_results(cellar_results, format):
     return cellar_uris
 
 # Function to process a list of ids to download the corresponding zip files
-def process_range(ids: list, folder_path: str, log_dir: str, format: str):
+def download_document(ids: list, folder_path: str, log_dir: str, format: str):
     """
     Process a list of ids to download the corresponding zip files.
 
@@ -121,46 +120,92 @@ def process_range(ids: list, folder_path: str, log_dir: str, format: str):
     >>> process_range(ids, folder_path)
     """
     try:
-        zip_files = []
-        single_files = []
-        other_downloads = []
         file_paths = []
         
         for id in ids:
-            
-            response = fetch_content(id.strip())
-            if response is None:
-                continue
-            
-            if 'Content-Type' in response.headers:
-                if 'zip' in response.headers['Content-Type']:
-                    file_path =  os.path.join(folder_path, id)
-                    zip_files.append(id)
-                    extract_zip(response, file_path)                    
-                else:
-                    file_path = os.path.join(folder_path, id + '.' + format)
-                    single_files.append(id)
-                    out_file = os.path.join(file_path)
-                    os.makedirs(os.path.dirname(out_file), exist_ok=True)
-                    with open(out_file, 'w+', encoding="utf-8") as f:
-                        f.write(response.text)
-                    
-                file_paths.append(file_path)
-            else:
-                other_downloads.append(id)
-        
-        if len(other_downloads) != 0:
-            # Log results
-            id_logs_path = os.path.join(log_dir, 'failed_' + get_current_timestamp() + '.txt')
-            os.makedirs(os.path.dirname(id_logs_path), exist_ok=True)
-            with open(id_logs_path, 'w+') as f:
-                f.write('Failed downloads ' + get_current_timestamp() + '\n' + str(other_downloads))
-        
-        with open(os.path.join(log_dir, get_current_timestamp() + '.txt'), 'w+') as f:
-            f.write(f"Zip files: {len(zip_files)}, Single files: {len(single_files)}, Failed downloads: {len(other_downloads)}")
+            print(id)
+            response = fetch_content(id)
+            file_path = handle_response(response=response, folder_path=folder_path, cellar_id=id)
+            file_paths.append(file_path)
         return file_paths
+
     except Exception as e:
         logging.error(f"Error processing range: {e}")
+
+
+def handle_response(response, folder_path, cellar_id):
+    """
+    Handle a server response by saving or extracting its content.
+
+    Parameters
+    ----------
+    response : requests.Response
+        The HTTP response object.
+    folder_path : str
+        Directory where the file will be saved.
+    cid : str
+        CELLAR ID of the document.
+
+    Returns
+    -------
+    str or None
+        Path to the saved file or None if the response couldn't be processed.
+    """
+    content_type = response.headers.get('Content-Type', '')
+    
+    # The return file is usually either a zip file, or a file with the name DOC_* inside a folder named as the cellar_id
+    target_path = os.path.join(folder_path, cellar_id)
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+    if 'zip' in content_type:
+        extract_zip(response, target_path)
+        return target_path
+    else:
+        extension = get_extension_from_content_type(content_type)
+        if not extension:
+            logging.warning(f"Unknown content type for ID {cellar_id}: {content_type}")
+            return None
+
+        file_path = f"{target_path}.{extension}"
+        file_path = os.path.normpath(file_path)
+        is_binary = 'text' not in content_type  # Assume binary if not explicitly text
+        
+        with open(file_path, mode='wb+') as f:
+            f.write(response.content)            
+        #print(response.content)
+        #print(file_path)
+        return file_path
+    
+def get_extension_from_content_type(content_type):
+    """Map Content-Type to a file extension."""
+    content_type_mapping = [
+        'html',
+        'json',
+        'xml',
+        'txt',
+        'zip'
+    ]
+    for ext in content_type_mapping:
+        if ext in content_type:
+            return ext
+    return None
+
+def save_file(content, file_path, binary=False):
+    """
+    Save content to a file.
+
+    Parameters
+    ----------
+    content : bytes or str
+        The content to save.
+    file_path : str
+        Path to the file.
+    binary : bool
+        Whether the content is binary or text.
+    """
+    mode = 'wb' if binary else 'w'
+    with open(file_path, mode) as f:
+        f.write(content)
 
 
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
@@ -205,7 +250,7 @@ def fetch_content(id: str) -> requests.Response:
     try:
         url = BASE_URL + id
         headers = {
-            'Accept': "application/zip, application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml;notice=object",
+            'Accept': "*, application/zip, application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml, application/xml;notice=object",
             'Accept-Language': "eng",
             'Content-Type': "application/x-www-form-urlencoded",
             'Host': "publications.europa.eu"
@@ -238,9 +283,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Simulate getting results from somewhere
 
-    with open('./tests/results_html.json', 'r') as f:
+    with open('./tests/metadata/query_results/query_results.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
-    document_paths = download_documents(results, './tests/data/html', log_dir='./tests/logs', format='xhtml')
-    #document_paths = download_documents(results, './tests/data/formex', log_dir='./tests/logs', format='fmx4')
+    #document_paths = download_documents(results, './tests/data/html', log_dir='./tests/logs', format='xhtml')
+    document_paths = download_documents(results, './tests/data/formex', log_dir='./tests/logs', format='fmx4')
 
     print(document_paths)

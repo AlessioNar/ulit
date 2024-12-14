@@ -1,33 +1,36 @@
 from .parser import Parser
 import re
-import xml.etree.ElementTree as ET
+from lxml import etree
+from collections import OrderedDict
+import re
+from datetime import date
 
-class Formex4Parser(Parser):
-    def parse(self, file):
-        """
-        Parses a FORMEX XML document to extract metadata, title, preamble, and enacting terms.
+from lxml import etree, objectify
+from lxml.builder import ElementMaker
 
-        Args:
-        file (str): Path to the FORMEX XML file.
 
-        Returns:
-        dict: Parsed data containing metadata, title, preamble, and articles.
-        """
-        with open(file, 'r', encoding='utf-8') as f:
-            tree = ET.parse(f)
-            root = tree.getroot()
-            
-                        
-        parsed_data = {
-            "metadata": self._parse_metadata(root),
-            "title": self._parse_title(root),
-            "preamble": self._parse_preamble(root),
-            "articles": self._parse_articles(root),
+FMX_NAMESPACES = {
+            'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
         }
 
-        return parsed_data
+class Formex4Parser(Parser):
+    def __init__(self):
+        """
+        Initializes the parser
+        
+        """
+        # Define the namespace mapping
+        self.namespaces = FMX_NAMESPACES
 
-    def _parse_metadata(self, root):
+            
+    def load_xml(self, file):
+        """
+        """
+        with open(file, 'r', encoding='utf-8') as f:
+            tree = etree.parse(f)
+            self.root = tree.getroot()
+
+    def get_metadata(self):
         """
         Extracts metadata information from the BIB.INSTANCE section.
 
@@ -38,7 +41,7 @@ class Formex4Parser(Parser):
         dict: Extracted metadata.
         """
         metadata = {}
-        bib_instance = root.find('BIB.INSTANCE')
+        bib_instance = self.root.find('BIB.INSTANCE')
         
         if bib_instance is not None:
             doc_ref = bib_instance.find('DOCUMENT.REF')
@@ -64,7 +67,7 @@ class Formex4Parser(Parser):
         
         return metadata
 
-    def _parse_title(self, root):
+    def get_title(self, root):
         """
         Extracts title information from the TITLE section.
 
@@ -84,7 +87,7 @@ class Formex4Parser(Parser):
         
         return title_text.strip()
         
-    def _parse_preamble(self, root):
+    def get_preamble(self, root):
         """
         Extracts the preamble section, including initial statements and considerations.
 
@@ -129,8 +132,24 @@ class Formex4Parser(Parser):
 
         
         return preamble_data
+    
+    def get_body(self) -> None:
+        """
+        Extracts the enacting terms element from the document.
 
-    def _parse_articles(self, root):
+        Returns
+        -------
+        None
+            Updates the instance's body attribute with the found body element.
+        """
+        # Use the namespace-aware find
+        self.body = self.root.find('.//fmx:ENACTING.TERMS', namespaces=self.namespaces)
+        if self.body is None:
+            # Fallback: try without namespace
+            self.body = self.root.find('.//ENACTING.TERMS')
+    
+
+    def get_articles(self):
         """
         Extracts articles from the ENACTING.TERMS section.
 
@@ -140,16 +159,29 @@ class Formex4Parser(Parser):
         Returns:
         list: Articles with identifier and content.
         """
-        articles = []
-        enacting_terms = root.find('ENACTING.TERMS')
-        
-        if enacting_terms is not None:
-            for article in enacting_terms.findall('ARTICLE'):
+        self.articles = []
+        if self.body is not None:
+            for article in self.body.findall('.//ARTICLE'):
                 article_data = {
-                    "identifier": article.get("IDENTIFIER"),
-                    "title": article.findtext('TI.ART'),
-                    "content": " ".join("".join(alinea.itertext()).strip() for alinea in article.findall('ALINEA'))
+                    "eId": article.get("IDENTIFIER"),
+                    "article_num": article.findtext('.//TI.ART'),
+                    "article_text": " ".join("".join(alinea.itertext()).strip() for alinea in article.findall('.//ALINEA'))
                 }
-                articles.append(article_data)
+                self.articles.append(article_data)
+        else:
+            print('No enacting terms XML tag has been found')
         
-        return articles
+
+    def parse(self, file):
+        """
+        Parses a FORMEX XML document to extract metadata, title, preamble, and enacting terms.
+
+        Args:
+        file (str): Path to the FORMEX XML file.
+
+        Returns:
+        dict: Parsed data containing metadata, title, preamble, and articles.
+        """
+        self.load_xml(file)
+        self.get_body()
+        self.get_articles()
