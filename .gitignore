@@ -1,6 +1,2 @@
-build/*
-dist/*
 **/__pycache__/*
-other_tests.py
-otherpackages.py
 tests/logs
