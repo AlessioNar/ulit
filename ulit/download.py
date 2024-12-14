@@ -35,7 +35,7 @@ def download_documents(results, download_dir, log_dir, format=None):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    document_paths = process_range(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir)
+    document_paths = process_range(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
     
     return document_paths
 
@@ -87,7 +87,7 @@ def get_cellar_ids_from_json_results(cellar_results, format):
     return cellar_uris
 
 # Function to process a list of ids to download the corresponding zip files
-def process_range(ids: list, folder_path: str, log_dir: str):
+def process_range(ids: list, folder_path: str, log_dir: str, format: str):
     """
     Process a list of ids to download the corresponding zip files.
 
@@ -136,12 +136,15 @@ def process_range(ids: list, folder_path: str, log_dir: str):
             if 'Content-Type' in response.headers:
                 if 'zip' in response.headers['Content-Type']:
                     zip_files.append(id)
-                    extract_zip(response, file_path)
-                    file_paths.append(file_path)
+                    extract_zip(response, file_path)                    
                 else:
                     single_files.append(id)
-                    process_single_file(response, file_path)
-                    file_paths.append(file_path)
+                    out_file = folder_path + '.' + format
+                    os.makedirs(os.path.dirname(out_file), exist_ok=True)
+                    with open(out_file, 'w+', encoding="utf-8") as f:
+                        f.write(response.text)
+                    
+                file_paths.append(file_path)
             else:
                 other_downloads.append(id)
         
@@ -158,10 +161,6 @@ def process_range(ids: list, folder_path: str, log_dir: str):
     except Exception as e:
         logging.error(f"Error processing range: {e}")
 
-def save_file(content, file_path):
-    """Save content to a file."""
-    with open(file_path, 'w+', encoding='utf-8') as f:
-        f.write(content)
 
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
 def fetch_content(id: str) -> requests.Response:
@@ -218,41 +217,6 @@ def fetch_content(id: str) -> requests.Response:
         return None
 
 
-# Function to process a single file
-def process_single_file(response: requests.Response, folder_path: str):
-    """
-    Process a single file by saving its contents to a file.
-
-    Parameters
-    ----------
-    response : requests.Response
-        The HTTP response object containing the file contents.
-    folder_path : str
-        The path to the folder where the file will be saved.
-
-    Returns
-    -------
-    None
-
-    Notes
-    -----
-    This function saves the contents of a single file from an HTTP response to a
-    file on disk. The file name is constructed by appending the id to the folder
-    path with an '.html' extension. The function ensures that the directory path
-    exists before attempting to write the file.
-
-    Examples
-    --------
-    >>> response = requests.get('http://example.com/file')
-    >>> folder_path = '/path/to/folder'
-    >>> process_single_file(response, folder_path)
-    """
-    out_file = folder_path + '.html'
-    os.makedirs(os.path.dirname(out_file), exist_ok=True)
-    with open(out_file, 'w+', encoding="utf-8") as f:
-        f.write(response.text)
-
-
 
 # Function to get the current timestamp
 def get_current_timestamp():
@@ -275,4 +239,5 @@ if __name__ == "__main__":
     with open('./tests/results.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
     document_paths = download_documents(results, './tests/data/html', log_dir='./tests/logs', format='xhtml')
+
     print(document_paths)
