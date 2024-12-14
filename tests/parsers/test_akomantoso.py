@@ -1,5 +1,5 @@
 import unittest
-from op_cellar.parsers.akomantoso import AkomaNtosoParser
+from ulit.parsers.akomantoso import AkomaNtosoParser
 import os
 import lxml.etree as etree
 

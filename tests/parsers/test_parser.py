@@ -1,5 +1,5 @@
 import unittest
-from op_cellar.parsers.parser import validate_xml
+from ulit.parsers.parser import validate_xml
 import os 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")

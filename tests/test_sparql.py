@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
 import json
-from op_cellar.sparql import send_sparql_query, get_results_table
+from ulit.sparql import send_sparql_query, get_results_table
 import os
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "parsers/data")
