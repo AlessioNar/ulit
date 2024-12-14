@@ -9,6 +9,25 @@ class Parser(ABC):
     @abstractmethod
     def parse(self, data):
         pass
+    
+    def get_root(self, file: str):
+        """
+        Parses an XML file and returns its root element.
+
+        Parameters
+        ----------
+        file : str
+            Path to the XML file.
+
+        Returns
+        -------
+        lxml.etree._Element
+            Root element of the parsed XML document.
+        """
+        with open(file, 'r', encoding='utf-8') as f:
+            tree = etree.parse(f)
+            self.root = tree.getroot()
+            return self.root
 
 class XMLParser(Parser):
     def parse(self, data):
