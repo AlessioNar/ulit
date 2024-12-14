@@ -267,12 +267,6 @@ def extract_zip(response: requests.Response, folder_path: str):
     except Exception as e:
         logging.error(f"Error downloading zip: {e}")
 
-# Function to print a list to a file
-def print_list_to_file(filename, lst):
-    with open(filename, 'w+') as f:
-        for item in lst:
-            f.write(item + '\n')
-
 
 # Main function
 if __name__ == "__main__":
