@@ -274,4 +274,4 @@ if __name__ == "__main__":
     # Simulate getting results from somewhere
     with open('./tests/results.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
-    document_path = download_documents(results, './tests/parsers/data', log_dir='./tests/logs', format='xhtml')
+    document_path = download_documents(results, './tests/parsers/data/html', log_dir='./tests/logs', format='xhtml')
