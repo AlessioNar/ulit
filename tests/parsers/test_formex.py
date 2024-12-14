@@ -4,19 +4,26 @@ import xml.etree.ElementTree as ET
 
 import os 
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "../data/formex")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..\\data\\formex")
+file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
 
 class TestFormex4Parser(unittest.TestCase):
     def setUp(self):
-        self.formex_parser = Formex4Parser()
+        self.maxDiff = None  # Allow full diff if needed        
+        self.parser = Formex4Parser()
+        self.parser.get_root(file_path)
 
-    def test_parse_metadata(self):
-        self.maxDiff = None  # Allow the full diff to be displayed
-        file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
+    def test_get_root(self):
+        """Test parsing and root element retrieval from the Akoma Ntoso file."""
+        self.assertTrue(os.path.exists(file_path), f"Test file not found at {file_path}")
+        self.assertIsNotNone(self.parser.root, "Root element should not be None")
         
-        self.formex_parser.load_xml(file_path)
+    def test_get_metadata(self):
+        self.maxDiff = None  # Allow the full diff to be displayed
+        
+        self.parser.load_xml(file_path)
 
-        result = self.formex_parser.get_metadata()
+        result = self.parser.get_metadata()
         expected = {
             "file": "L_2011334EN.01002501.doc.xml",
             "collection": "L",
@@ -35,34 +42,23 @@ class TestFormex4Parser(unittest.TestCase):
         }
         self.assertEqual(result, expected)
     
-    def test_parse_title(self):
+    def test_get_preface(self):
         self.maxDiff = None  # Allow full diff if needed
-        file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
-        
-        # Parse the XML tree and pass the root to _parse_title
-        with open(file_path, 'r', encoding='utf-8') as f:
-            tree = ET.parse(f)
-            root = tree.getroot()
-        
-        result = self.formex_parser.get_title(root)
+    
+    
+        result = self.parser.get_preface()
         expected = (
             "Commission Implementing Regulation (EU) No 1319/2011 of 15 December 2011 "
             "fixing representative prices in the poultrymeat and egg sectors and for egg "
             "albumin, and amending Regulation (EC) No 1484/95"
         )
-        self.assertEqual(result, expected)
+        self.assertEqual(self.parser.preface, expected)
     
-    def test_parse_preamble(self):
+    def test_get_preamble(self):
         """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
         self.maxDiff = None  # Allow full diff if needed
-        file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
         
-        # Parse the XML tree and pass the root to _parse_preamble
-        with open(file_path, 'r', encoding='utf-8') as f:
-            tree = ET.parse(f)
-            root = tree.getroot()
-        
-        result = self.formex_parser.get_preamble(root)
+        result = self.parser.get_preamble()
         
         # Expected preamble structure
         # @todo - see main function
@@ -84,18 +80,14 @@ class TestFormex4Parser(unittest.TestCase):
         }
         
         self.assertEqual(result, expected)
-
-
-
-    def test_parse_articles(self):
-        self.maxDiff = None  # Allow full diff if needed
-        file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
+    
+    def test_get_body(self):
+        self.parser.get_body()
+        self.assertIsNotNone(self.parser.body, "Body element should not be None")    
         
-        self.formex_parser.load_xml(file_path)
-        self.formex_parser.get_body()
-        
-        self.formex_parser.get_articles()
-        
+    def test_get_articles(self):
+        self.parser.get_body()
+        self.parser.get_articles()
         
         # Expected articles based on sample data in XML file
         expected = [
@@ -111,7 +103,7 @@ class TestFormex4Parser(unittest.TestCase):
             }
         ]
         
-        self.assertEqual(self.formex_parser.articles, expected)
+        self.assertEqual(self.parser.articles, expected)
 
 # Run the tests
 if __name__ == "__main__":

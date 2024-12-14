@@ -20,6 +20,12 @@ class Formex4Parser(Parser):
         
         """
         # Define the namespace mapping
+        self.root = None
+        self.namespaces = {}
+        
+        self.preface = None
+        self.metadata = {}
+        
         self.namespaces = FMX_NAMESPACES
 
             
@@ -67,7 +73,7 @@ class Formex4Parser(Parser):
         
         return metadata
 
-    def get_title(self, root):
+    def get_preface(self):
         """
         Extracts title information from the TITLE section.
 
@@ -77,17 +83,18 @@ class Formex4Parser(Parser):
         Returns:
         str: Concatenated title text.
         """
-        title_element = root.find('TITLE')
+        title_element = self.root.find('TITLE')
         title_text = ""
         
         if title_element is not None:
             for paragraph in title_element.iter('P'):
                 paragraph_text = "".join(paragraph.itertext()).strip()
                 title_text += paragraph_text + " "
+        self.preface = title_text.strip()
         
-        return title_text.strip()
+        return self.preface
         
-    def get_preamble(self, root):
+    def get_preamble(self):
         """
         Extracts the preamble section, including initial statements and considerations.
 
@@ -98,7 +105,7 @@ class Formex4Parser(Parser):
             dict: Preamble details, including quotations and considerations.
         """
         preamble_data = {"initial_statement": None, "quotations": [], "consid_init": None, "considerations": [], "preamble_final": None}
-        preamble = root.find('PREAMBLE')
+        preamble = self.root.find('PREAMBLE')
 
         if preamble is not None:
             # Initial statement
@@ -119,6 +126,8 @@ class Formex4Parser(Parser):
                 text = text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
                 text = re.sub(' +', ' ', text)  # replace multiple spaces with a single space
                 preamble_data["quotations"].append(text)
+                
+            self.citations = preamble_data['quotations']
 
             preamble_data["consid_init"] = preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
 
@@ -183,5 +192,7 @@ class Formex4Parser(Parser):
         dict: Parsed data containing metadata, title, preamble, and articles.
         """
         self.load_xml(file)
+        self.get_preface()
+        self.get_preamble()
         self.get_body()
         self.get_articles()
