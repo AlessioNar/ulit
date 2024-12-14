@@ -8,14 +8,15 @@
      Latest version of the specification: http://docs.oasis-open.org.legaldocml/akn-core/v1.0/akn-core-v1.0-part2-specs.html
      TC IPR Statement: https://www.oasis-open.org/committees/legaldocml/ipr.php
 -->
-<xsd:schema xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0/WD17"
+<xsd:schema xmlns="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0/WD17"
+            xmlns:xml="http://www.w3.org/XML/1998/namespace"
+            targetNamespace="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
             elementFormDefault="qualified">
 
+	<xsd:import namespace="http://www.w3.org/XML/1998/namespace"
+				schemaLocation="./xml.xsd"/>
 
-	  <xsd:import namespace="http://www.w3.org/XML/1998/namespace"
-               schemaLocation="http://www.w3.org/2001/03/xml.xsd"/>
 
 	  <xsd:annotation>
 		    <xsd:documentation>
@@ -1743,7 +1744,7 @@ These attribute specify the human language in which the content of the element i
 
 		    <xsd:attribute ref="xml:lang"/>
 		    <xsd:attribute ref="xml:space"/>
-		    <xsd:attribute ref="xml:id"/>
+		    <!--<xsd:attribute ref="xml:id"/>-->
 	  </xsd:attributeGroup>
 
 	  <xsd:attributeGroup name="corereq">

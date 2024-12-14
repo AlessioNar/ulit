@@ -1,7 +1,9 @@
 from .parser import Parser
 import re
-#import xml.etree.ElementTree as ET
 from lxml import etree
+import os
+
+
 
 class AkomaNtosoParser(Parser):
     """
@@ -25,7 +27,9 @@ class AkomaNtosoParser(Parser):
         # Define the namespace mapping
         self.namespaces = {
             'akn': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
+            'an': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
             'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
+
 
         }
     
@@ -45,24 +49,25 @@ class AkomaNtosoParser(Parser):
             lxml.etree._Element
                 The modified XML tree with specified nodes removed.
         """
-        for item in tree.findall(node, namespaces=self.namespaces):
-            text = ' '.join(item.itertext()).strip()
-            
-            # Find the parent and remove the <node> element
-            parent = item.getparent()
-            tail_text = item.tail
-            if parent is not None:
-                parent.remove(item)
+        if tree.findall(node, namespaces=self.namespaces) is not None:
+            for item in tree.findall(node, namespaces=self.namespaces):
+                text = ' '.join(item.itertext()).strip()
+                
+                # Find the parent and remove the <node> element
+                parent = item.getparent()
+                tail_text = item.tail
+                if parent is not None:
+                    parent.remove(item)
 
-            # Preserve tail text if present
-            if tail_text:
-                if parent.getchildren():
-                    # If there's a previous sibling, add the tail to the last child
-                    previous_sibling = parent.getchildren()[-1]
-                    previous_sibling.tail = (previous_sibling.tail or '') + tail_text
-                else:
-                    # If no siblings, add the tail text to the parent's text
-                    parent.text = (parent.text or '') + tail_text
+                # Preserve tail text if present
+                if tail_text:
+                    if parent.getchildren():
+                        # If there's a previous sibling, add the tail to the last child
+                        previous_sibling = parent.getchildren()[-1]
+                        previous_sibling.tail = (previous_sibling.tail or '') + tail_text
+                    else:
+                        # If no siblings, add the tail text to the parent's text
+                        parent.text = (parent.text or '') + tail_text
         
         return tree
 
@@ -85,6 +90,16 @@ class AkomaNtosoParser(Parser):
             tree = etree.parse(f)
             self.root = tree.getroot()
             return self.root
+    
+    def get_meta(self):
+        meta_data = {
+            "meta_identification" : self.get_meta_identification(),
+            "meta_proprietary" : self.get_meta_proprietary(),
+            "meta_references" : self.get_meta_references()
+        }
+
+        self.meta = meta_data
+        
         
     def get_meta_identification(self):
         """
@@ -103,12 +118,12 @@ class AkomaNtosoParser(Parser):
         if identification is None:
             return None
 
-        frbr_data = {
+        meta_identification = {
             'work': self._get_frbr_work(identification),
             'expression': self._get_frbr_expression(identification),
             'manifestation': self._get_frbr_manifestation(identification)
         }
-        return frbr_data
+        return meta_identification
     
     def _get_frbr_work(self, identification):
         """
@@ -212,11 +227,12 @@ class AkomaNtosoParser(Parser):
         if references is None:
             return None
 
-        return {
+        meta_references = {
             'eId': references.get('eId'),
             'href': references.get('href'),
             'showAs': references.get('showAs')
         }
+        return meta_references
     
     def get_meta_proprietary(self):
         """
@@ -240,7 +256,7 @@ class AkomaNtosoParser(Parser):
         if document_ref is None:
             return None
 
-        return {
+        meta_proprietary = {
             'file': document_ref.get('FILE'),
             'coll': document_ref.find('fmx:COLL', namespaces=self.namespaces).text,
             'year': document_ref.find('fmx:YEAR', namespaces=self.namespaces).text,
@@ -248,8 +264,10 @@ class AkomaNtosoParser(Parser):
             'no_seq': proprietary.find('fmx:NO.SEQ', namespaces=self.namespaces).text
             # Add other elements as needed
         }
+
+        return meta_proprietary
     
-    def get_preface(self):
+    def get_preface(self) -> None:
         """
             Extracts paragraphs from the preface section of the document.
 
@@ -269,7 +287,7 @@ class AkomaNtosoParser(Parser):
             paragraph_text = ''.join(p.itertext()).strip()
             paragraphs.append(paragraph_text)
 
-        return paragraphs
+        self.preface = ' '.join(paragraphs)
     
     def get_preamble(self):
         """
@@ -288,7 +306,7 @@ class AkomaNtosoParser(Parser):
             'citations': self.get_preamble_citations(),
             'recitals': self.get_preamble_recitals()
         }
-        return preamble_data
+        self.preamble = preamble_data
     
     def get_preamble_formula(self):
         """
@@ -438,7 +456,6 @@ class AkomaNtosoParser(Parser):
                 'chapter_heading': ''.join(chapter_heading.itertext()).strip() if chapter_heading is not None else None
             })
 
-        return None
     
     def get_articles(self) -> None:
         """
@@ -531,18 +548,166 @@ class AkomaNtosoParser(Parser):
                 }
                 elements.append(element)
         return elements
+    
+    def get_conclusions(self):
+        """
+        Extracts conclusions information from the document.
 
+        Returns
+        -------
+        None
+        """
+        conclusions_section = self.root.find('.//akn:conclusions', namespaces=self.namespaces)
+        if conclusions_section is None:
+            return None
+
+        # Find the container with signatures
+        container = conclusions_section.find('.//akn:container[@name="signature"]', namespaces=self.namespaces)
+        if container is None:
+            return None
+
+        # Extract date from the first <signature>
+        date_element = container.find('.//akn:date', namespaces=self.namespaces)
+        signature_date = date_element.text if date_element is not None else None
+
+        # Extract all signatures
+        signatures = []
+        for p in container.findall('akn:p', namespaces=self.namespaces):
+            # For each <p>, find all <signature> tags
+            paragraph_signatures = []
+            for signature in p.findall('akn:signature', namespaces=self.namespaces):
+                # Collect text within the <signature>, including nested elements
+                signature_text = ''.join(signature.itertext()).strip()
+                paragraph_signatures.append(signature_text)
+
+            # Add the paragraph's signatures as a group
+            if paragraph_signatures:
+                signatures.append(paragraph_signatures)
+
+        # Store parsed conclusions data
+        self.conclusions = {
+            'date': signature_date,
+            'signatures': signatures
+        }
+
+    def load_schema(self):
+        """
+        Loads the XSD schema for XML validation using an absolute path.
+        """
+        try:
+            # Resolve the absolute path to the XSD file
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            schema_path = os.path.join(base_dir, 'assets', 'akomantoso30.xsd')
+
+            # Parse the schema
+            with open(schema_path, 'r') as f:
+                schema_doc = etree.parse(f)
+                self.schema = etree.XMLSchema(schema_doc)
+            print("Schema loaded successfully.")
+        except Exception as e:
+            print(f"Error loading schema: {e}")
+
+    def validate(self, file: str) -> bool:
+        """
+        Validates an XML file against the loaded XSD schema.
+
+        Args:
+            file (str): Path to the XML file to validate.
+
+        Returns:
+            bool: True if the XML file is valid, False otherwise.
+        """
+        if not self.schema:
+            print("No schema loaded. Please load an XSD schema first.")
+            return False
+
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                xml_doc = etree.parse(f)
+                self.schema.assertValid(xml_doc)
+            print(f"{file} is valid.")
+            return True
+        except etree.DocumentInvalid as e:
+            print(f"{file} is invalid. Validation errors: {e}")
+            return False
+        except Exception as e:
+            print(f"An error occurred during validation: {e}")
+            return False
+    
     def parse(self, file: str) -> list[dict]:
         """
         Parses an Akoma Ntoso file to extract provisions as individual sentences.
-        
+
+        This method sequentially calls various parsing functions to extract metadata,
+        preface, preamble, body, chapters, articles, and conclusions from the XML file.
+        It logs errors encountered during parsing and provides debug information about
+        the structure of the document.
+
         Args:
             file (str): The path to the Akoma Ntoso XML file.
-        
+
         Returns:
-            list[dict]: List of extracted provisions with CELEX ID, sentence text, and eId.
+            list[dict]: List of extracted provisions with CELEX ID, sentence text, and eId,
+                        along with debug information.
         """
-        self.get_root(file)
-        self.get_body()
+        debug_info = {}
 
+        try:
+            self.load_schema()
+            self.validate(file)
+        except Exception as e:
+            print(f'Invalid Akoma Ntoso file: parsing may not work or work only partially: {e}')
 
+        try:
+            self.get_root(file)
+            print("Root element loaded successfully.")
+        except Exception as e:
+            print(f"Error in get_root: {e}")
+
+        try:
+            self.get_meta()
+            debug_info['meta'] = self.meta if hasattr(self, 'meta') else "Meta not parsed."
+            print("Meta parsed successfully.")
+        except Exception as e:
+            print(f"Error in get_meta: {e}")
+
+        try:
+            self.get_preface()
+            debug_info['preface'] = self.preface if hasattr(self, 'preface') else 0
+            print(f"Preface parsed successfully. Preface: {debug_info['preface']}")
+        except Exception as e:
+            print(f"Error in get_preface: {e}")
+
+        try:
+            self.get_preamble()
+            debug_info['preamble'] = len(self.preamble['recitals']) if hasattr(self, 'preamble') and 'recitals' in self.preamble else 0
+            print(f"Preamble parsed successfully. Number of recitals: {debug_info['preamble']}")
+        except Exception as e:
+            print(f"Error in get_preamble: {e}")
+
+        try:
+            self.get_body()
+            print("Body parsed successfully.")
+        except Exception as e:
+            print(f"Error in get_body: {e}")
+
+        try:
+            self.get_chapters()
+            debug_info['chapters'] = len(self.chapters) if hasattr(self, 'chapters') else 0
+            print(f"Chapters parsed successfully. Number of chapters: {debug_info['chapters']}")
+        except Exception as e:
+            print(f"Error in get_chapters: {e}")
+
+        try:
+            self.get_articles()
+            debug_info['articles'] = len(self.articles) if hasattr(self, 'articles') else 0
+            print(f"Articles parsed successfully. Number of articles: {debug_info['articles']}")
+        except Exception as e:
+            print(f"Error in get_articles: {e}")
+
+        try:
+            self.get_conclusions()
+            debug_info['conclusions'] = self.conclusions if hasattr(self, 'conclusions') else "Conclusions not parsed."
+            print(f"Conclusions parsed successfully. Conclusions: {self.conclusions}")
+        except Exception as e:
+            print(f"Error in get_conclusions: {e}")
