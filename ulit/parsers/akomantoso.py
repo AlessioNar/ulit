@@ -24,6 +24,37 @@ class AkomaNtosoParser(Parser):
         Initializes the parser
         
         """
+
+        self.namespaces = {}
+    
+        self.root = None
+        self.meta = None
+    
+        self.meta_identification = None
+    
+        self.meta_proprietary = None
+    
+        self.meta_references = None
+        self.preface = None
+        self.preamble = None
+    
+        self.preamble_formula = None
+    
+        self.preamble_citations = None
+    
+        self.preamble_recitals = None
+        self.act = None
+    
+        self.body = None
+        self.chapters = []
+        self.articles = []
+    
+        self.articles_text = []
+        self.conclusions = None
+        self.schema = None
+        self.debug_info = {}
+
+        
         # Define the namespace mapping
         self.namespaces = {
             'akn': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
@@ -71,25 +102,7 @@ class AkomaNtosoParser(Parser):
         
         return tree
 
-    
-    def get_root(self, file: str):
-        """
-        Parses an XML file and returns its root element.
 
-        Parameters
-        ----------
-        file : str
-            Path to the XML file.
-
-        Returns
-        -------
-        lxml.etree._Element
-            Root element of the parsed XML document.
-        """
-        with open(file, 'r', encoding='utf-8') as f:
-            tree = etree.parse(f)
-            self.root = tree.getroot()
-            return self.root
     
     def get_meta(self):
         meta_data = {
@@ -301,12 +314,9 @@ class AkomaNtosoParser(Parser):
             - 'citations': List of citations
             - 'recitals': List of recitals
         """
-        preamble_data = {
-            'formula': self.get_preamble_formula(),
-            'citations': self.get_preamble_citations(),
-            'recitals': self.get_preamble_recitals()
-        }
-        self.preamble = preamble_data
+        self.citations = self.get_preamble_citations()
+        self.formula = self.get_preamble_formula()
+        self.recitals = self.get_preamble_recitals()
     
     def get_preamble_formula(self):
         """
@@ -679,9 +689,7 @@ class AkomaNtosoParser(Parser):
             print(f"Error in get_preface: {e}")
 
         try:
-            self.get_preamble()
-            debug_info['preamble'] = len(self.preamble['recitals']) if hasattr(self, 'preamble') and 'recitals' in self.preamble else 0
-            print(f"Preamble parsed successfully. Number of recitals: {debug_info['preamble']}")
+            self.get_preamble()            
         except Exception as e:
             print(f"Error in get_preamble: {e}")
 
