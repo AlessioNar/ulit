@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 
 import os 
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data/formex")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "../data/formex")
 
 class TestFormex4Parser(unittest.TestCase):
     def setUp(self):

@@ -4,13 +4,12 @@ import logging
 import zipfile
 import requests
 from datetime import datetime
-import threading
 import json
 
 # Constants
 BASE_URL = 'http://publications.europa.eu/resource/cellar/'
 
-def download_documents(results, download_dir, log_dir, format=None, nthreads=1):
+def download_documents(results, download_dir, log_dir, format=None):
     """
     Download Cellar documents in parallel using multiple threads.
 
@@ -31,17 +30,15 @@ def download_documents(results, download_dir, log_dir, format=None, nthreads=1):
     The function uses a separate thread for each subset of Cellar ids.
     The number of threads can be adjusted by modifying the `nthreads` parameter.
     """
-    cellar_ids = get_cellar_ids_from_json_results(results, format)
+    cellar_ids = get_cellar_ids_from_json_results(cellar_results=results, format=format)
 
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    threads = []
-    for i in range(nthreads):  
-        cellar_ids_subset = cellar_ids[i::nthreads]
-        t = threading.Thread(target=process_range, args=(cellar_ids_subset, os.path.join(download_dir), log_dir))
-        threads.append(t)
-    [t.start() for t in threads]
-    [t.join() for t in threads]
+
+    document_paths = process_range(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir)
+    
+    return document_paths
+
 
 def get_cellar_ids_from_json_results(cellar_results, format):
     """
@@ -127,38 +124,47 @@ def process_range(ids: list, folder_path: str, log_dir: str):
         zip_files = []
         single_files = []
         other_downloads = []
+        file_paths = []
         
         for id in ids:
-            sub_folder_path = os.path.join(folder_path, id)
+            file_path = os.path.join(folder_path, id)
             
-            response = rest_get_call(id.strip())
+            response = fetch_content(id.strip())
             if response is None:
                 continue
             
             if 'Content-Type' in response.headers:
                 if 'zip' in response.headers['Content-Type']:
                     zip_files.append(id)
-                    extract_zip(response, sub_folder_path)
+                    extract_zip(response, file_path)
+                    file_paths.append(file_path)
                 else:
                     single_files.append(id)
-                    process_single_file(response, sub_folder_path)
+                    process_single_file(response, file_path)
+                    file_paths.append(file_path)
             else:
                 other_downloads.append(id)
         
         if len(other_downloads) != 0:
             # Log results
-            id_logs_path = log_dir + 'failed_' + get_current_timestamp() + '.txt'
+            id_logs_path = os.path.join(log_dir, 'failed_' + get_current_timestamp() + '.txt')
             os.makedirs(os.path.dirname(id_logs_path), exist_ok=True)
             with open(id_logs_path, 'w+') as f:
                 f.write('Failed downloads ' + get_current_timestamp() + '\n' + str(other_downloads))
         
-        with open(log_dir + get_current_timestamp() + '.txt', 'w+') as f:
+        with open(os.path.join(log_dir, get_current_timestamp() + '.txt'), 'w+') as f:
             f.write(f"Zip files: {len(zip_files)}, Single files: {len(single_files)}, Failed downloads: {len(other_downloads)}")
+        return file_paths
     except Exception as e:
         logging.error(f"Error processing range: {e}")
 
+def save_file(content, file_path):
+    """Save content to a file."""
+    with open(file_path, 'w+', encoding='utf-8') as f:
+        f.write(content)
+
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
-def rest_get_call(id: str) -> requests.Response:
+def fetch_content(id: str) -> requests.Response:
     """
     Send a GET request to download a zip file for the given id under the CELLAR URI.
 
@@ -274,4 +280,5 @@ if __name__ == "__main__":
     # Simulate getting results from somewhere
     with open('./tests/results.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
-    document_path = download_documents(results, './tests/parsers/data/html', log_dir='./tests/logs', format='xhtml')
+    document_paths = download_documents(results, './tests/data/html', log_dir='./tests/logs', format='xhtml')
+    print(document_paths)

@@ -4,7 +4,7 @@ import os
 import lxml.etree as etree
 
 # Define constants for file paths and directories
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data/akn")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "../data/akn")
 file_path = os.path.join(DATA_DIR, "32014L0092.akn")
 
 class TestAkomaNtosoParser(unittest.TestCase):
