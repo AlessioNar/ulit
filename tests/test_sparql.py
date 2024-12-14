@@ -4,7 +4,7 @@ import json
 from ulit.sparql import send_sparql_query, get_results_table
 import os
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "parsers/data")
+DATA_DIR = os.path.join(os.path.dirname(__file__), ".")
 
 class TestSendSparqlQuery(unittest.TestCase):
     def setUp(self):

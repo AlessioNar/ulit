@@ -9,9 +9,8 @@ import json
 
 # Constants
 BASE_URL = 'http://publications.europa.eu/resource/cellar/'
-LOG_DIR = 'logs/'
 
-def download_documents(results, download_dir, format=None, nthreads=1):
+def download_documents(results, download_dir, log_dir, format=None, nthreads=1):
     """
     Download Cellar documents in parallel using multiple threads.
 
@@ -34,12 +33,12 @@ def download_documents(results, download_dir, format=None, nthreads=1):
     """
     cellar_ids = get_cellar_ids_from_json_results(results, format)
 
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
     threads = []
     for i in range(nthreads):  
         cellar_ids_subset = cellar_ids[i::nthreads]
-        t = threading.Thread(target=process_range, args=(cellar_ids_subset, os.path.join(download_dir)))
+        t = threading.Thread(target=process_range, args=(cellar_ids_subset, os.path.join(download_dir), log_dir))
         threads.append(t)
     [t.start() for t in threads]
     [t.join() for t in threads]
@@ -91,7 +90,7 @@ def get_cellar_ids_from_json_results(cellar_results, format):
     return cellar_uris
 
 # Function to process a list of ids to download the corresponding zip files
-def process_range(ids: list, folder_path: str):
+def process_range(ids: list, folder_path: str, log_dir: str):
     """
     Process a list of ids to download the corresponding zip files.
 
@@ -148,12 +147,12 @@ def process_range(ids: list, folder_path: str):
         
         if len(other_downloads) != 0:
             # Log results
-            id_logs_path = LOG_DIR + 'failed_' + get_current_timestamp() + '.txt'
+            id_logs_path = log_dir + 'failed_' + get_current_timestamp() + '.txt'
             os.makedirs(os.path.dirname(id_logs_path), exist_ok=True)
             with open(id_logs_path, 'w+') as f:
                 f.write('Failed downloads ' + get_current_timestamp() + '\n' + str(other_downloads))
         
-        with open(LOG_DIR + get_current_timestamp() + '.txt', 'w+') as f:
+        with open(log_dir + get_current_timestamp() + '.txt', 'w+') as f:
             f.write(f"Zip files: {len(zip_files)}, Single files: {len(single_files)}, Failed downloads: {len(other_downloads)}")
     except Exception as e:
         logging.error(f"Error processing range: {e}")
@@ -262,19 +261,6 @@ def extract_zip(response: requests.Response, folder_path: str):
     except Exception as e:
         logging.error(f"Error downloading zip: {e}")
 
-# Function to log downloaded files
-def log_downloaded_files(downloaded_files: list, dir_to_check: str):
-    in_dir_name = LOG_DIR + 'in_dir_lists/'
-    os.makedirs(os.path.dirname(in_dir_name), exist_ok=True)
-    print_list_to_file(in_dir_name + 'in_dir_' + get_current_timestamp() + '.txt', downloaded_files)
-
-# Function to log missing ids
-def log_missing_ids(missing_ids: list):
-    new_ids_dir_name = LOG_DIR + 'cellar_ids/'
-    os.makedirs(os.path.dirname(new_ids_dir_name), exist_ok=True)
-    print_list_to_file(new_ids_dir_name + 'cellar_ids_' + get_current_timestamp() + '.txt', missing_ids)
-
-
 # Function to print a list to a file
 def print_list_to_file(filename, lst):
     with open(filename, 'w+') as f:
@@ -286,6 +272,6 @@ def print_list_to_file(filename, lst):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Simulate getting results from somewhere
-    with open('results.json', 'r') as f:
+    with open('./tests/results.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
-    download_documents(results, './downloads')
+    document_path = download_documents(results, './tests/parsers/data', log_dir='./tests/logs', format='xhtml')
