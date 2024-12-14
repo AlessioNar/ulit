@@ -9,8 +9,7 @@ The `ulit` package provides utilities to work with legal data in a way that lega
 ## 2. Installation
 
 ### 2.1 Using Poetry Dependency Manager
-
-It is highly recommended to use Poetry as a dependency manager. To install the `op_cellar` package using Poetry, follow these steps:
+It is highly recommended to use Poetry as a dependency manager. To install the `ulit` package using Poetry, follow these steps:
 
 1. Set up a Poetry environment by running the following command in your terminal:
 
@@ -20,53 +19,46 @@ poetry shell
 ```
 
 
-2. Add the `op_cellar` package as a dependency in your `pyproject.toml` file by running the following command:
+2. Add the `ulit` package as a dependency in your `pyproject.toml` file by running the following command:
 
 ```
-poetry add op_cellar
+poetry add ulit
 ```
 
 ### 2.2 Using Pip
 
-Alternatively, you can install the `op_cellar` package in the environment of your choice by using pip by running the following command in your terminal:
+Alternatively, you can install the `ulit` package in the environment of your choice by using pip by running the following command in your terminal:
 
 ```
-pip install op_cellar
+pip install ulit
 ```
 
 ## 3. User Guide
 
 ### 3.1 SPARQL Query
 
-To send a SPARQL query to the Publications Office SPARQL endpoint, you need to import the `send_sparql_query` function from the `op_cellar.sparql` module. Here is an example:
+SPARQL metadata retrieval is currently supported only from the Publications Office SPARQL endpoint based on the CELEX identifier.
 
 ```python
-from op_cellar.sparql import send_sparql_query
+from ulit.sparql import send_sparql_query
 
-sparql_results_table = send_sparql_query("path_to_sparql_file", "path_to_output_file")
+response = send_sparql_query(sparql_query_filepath, celex=None)
 ```
 
-Replace `"path_to_sparql_file"` with the actual path to your SPARQL query file and `"path_to_output_file"` with the desired output file path for the results table.
+Replace `"sparql_query_filepath"` with the actual path to your SPARQL query file and `"celex"` with the desired celex identifier.
 
 ### 3.2 Downloading the documents
 
 ```python
-from op_cellar.download import download_documents
+from ulit.download import download_documents
 
-download_documents(results=results, download_dir='./downloads/data', nthreads=4)
-
-```
-
-### 3.3 Parsing the downloaded documents
-
-```python
-from op_cellar.parser.parser import Parser
+download_documents(results=response, download_dir='desired_downloadpath', log_dir='desired_log_dir'format='xhtml')
 
 ```
 
 ## Acknowledgements
 
-The op_cellar package has been inspired by a series of previous packages and builds upon some of their architectures and workflows. We would like to acknowledge the following sources that have contributed to the development of this generic solution:
+The ulit package has been inspired by a series of previous packages and builds upon some of their architectures and workflows. We would like to acknowledge the following sources that have contributed to the development of this generic solution:
 
 ### Integration of part of the codebase
 
@@ -75,7 +67,7 @@ The op_cellar package has been inspired by a series of previous packages and bui
 
 ### Inspiration in the parsing strategy
 
-* https://github.com/step21/eurlex
+* [EURLEX package by step 21](https://github.com/step21/eurlex)
 * https://github.com/kevin91nl/eurlex/
 * https://github.com/Lexparency/eurlex2lexparency
 * https://github.com/maastrichtlawtech/extraction_libraries
@@ -87,6 +79,3 @@ The op_cellar package has been inspired by a series of previous packages and bui
 * [LegalHTML](https://art.uniroma2.it/legalhtml/)
 * [FORMEX](https://op.europa.eu/documents/3938058/5910419/formex_manual_on_screen_version.html)
 
-## Copyright
-
-In order to ensure the compatibility with other pre-existing software, the license of choice is the EUPL 1.2
