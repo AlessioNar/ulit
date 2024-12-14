@@ -1,12 +1,12 @@
 [project]
-name = "op_cellar"
-version = "0.0.3"
-description = "A generic package to query and retrieve documents from Cellar, the common data repository of the Publications Office of the European Union."
+name = "ulit"
+version = "0.0.1"
+description = "ULIT - a Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
 
 [tool.poetry]
 name = "op_cellar"
 version = "0.0.3"
-description = "A generic package to query and retrieve documents from Cellar, the common data repository of the Publications Office of the European Union."
+description = "ULIT - a Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
 authors = ["AlessioNar <alessio.nardin@gmail.com>"]
 license = "EUPL 1.2"
 readme = "README.md"
@@ -34,5 +34,5 @@ build-backend = "poetry.core.masonry.api"
 
 
 [project.urls]
-Homepage = "https://github.com/AlessioNar/op_cellar"
-Issues = "https://github.com/AlessioNar/op_cellar/issues"
+Homepage = "https://github.com/AlessioNar/ulit"
+Issues = "https://github.com/AlessioNar/ulit/issues"
