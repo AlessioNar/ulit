@@ -127,7 +127,6 @@ def process_range(ids: list, folder_path: str, log_dir: str, format: str):
         file_paths = []
         
         for id in ids:
-            file_path = os.path.join(folder_path, id)
             
             response = fetch_content(id.strip())
             if response is None:
@@ -135,11 +134,13 @@ def process_range(ids: list, folder_path: str, log_dir: str, format: str):
             
             if 'Content-Type' in response.headers:
                 if 'zip' in response.headers['Content-Type']:
+                    file_path =  os.path.join(folder_path, id)
                     zip_files.append(id)
                     extract_zip(response, file_path)                    
                 else:
+                    file_path = os.path.join(folder_path, id + '.' + format)
                     single_files.append(id)
-                    out_file = folder_path + '.' + format
+                    out_file = os.path.join(file_path)
                     os.makedirs(os.path.dirname(out_file), exist_ok=True)
                     with open(out_file, 'w+', encoding="utf-8") as f:
                         f.write(response.text)
@@ -204,7 +205,7 @@ def fetch_content(id: str) -> requests.Response:
     try:
         url = BASE_URL + id
         headers = {
-            'Accept': "application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml;notice=object",
+            'Accept': "application/zip, application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml;notice=object",
             'Accept-Language': "eng",
             'Content-Type': "application/x-www-form-urlencoded",
             'Host': "publications.europa.eu"
@@ -236,8 +237,10 @@ def extract_zip(response: requests.Response, folder_path: str):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     # Simulate getting results from somewhere
-    with open('./tests/results.json', 'r') as f:
+
+    with open('./tests/results_html.json', 'r') as f:
         results = json.loads(f.read())  # Load the JSON data
     document_paths = download_documents(results, './tests/data/html', log_dir='./tests/logs', format='xhtml')
+    #document_paths = download_documents(results, './tests/data/formex', log_dir='./tests/logs', format='fmx4')
 
     print(document_paths)
