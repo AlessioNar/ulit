@@ -29,13 +29,7 @@ class Parser(ABC):
             self.root = tree.getroot()
             return self.root
 
-class XMLParser(Parser):
-    def parse(self, data):
-        # Your XML parsing logic here
-        pass
-
-
-def validate_xml(xml_path: str, xsd_path: str) -> Tuple[bool, Union[str, None]]:
+def validate_xml(xml_path: str, xsd_path: str): 
     """
     Validate an XML file against an XSD schema.
     
@@ -73,7 +67,7 @@ def validate_xml(xml_path: str, xsd_path: str) -> Tuple[bool, Union[str, None]]:
         xml_doc = etree.parse(xml_path, parser)
         
         xmlschema.assertValid(xml_doc)
-        return True, None
+        return True
             
     except etree.XMLSyntaxError as e:
         error_msg = f"XML Syntax Error: {str(e)}"

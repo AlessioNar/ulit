@@ -2,7 +2,7 @@ import unittest
 from ulit.parsers.parser import validate_xml
 import os 
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+file_path = os.path.join(os.path.dirname(__file__), '..\\data\\akn\\eu')
 
 
 class TestXMLValidator(unittest.TestCase):
@@ -10,15 +10,15 @@ class TestXMLValidator(unittest.TestCase):
         """Set up test paths."""
 
         # Update these paths to match your actual file locations
-        self.valid_xml = os.path.join(DATA_DIR, "32014L0092.akn")
+        self.valid_xml = os.path.join(file_path, "32014L0092.akn")
         #self.invalid_xml = "path/to/invalid.xml"
-        self.xsd_file = os.path.join(DATA_DIR, "schemas", "akomantoso30.xsd")
+        self.xsd_file = os.path.join(os.path.dirname(__file__), "..\\metadata\\schemas\\akomantoso30.xsd")
 
-#    def test_valid_xml(self):
-#        """Test validation with valid XML file."""
-#        is_valid, error = validate_xml(self.valid_xml, self.xsd_file)
-#        self.assertTrue(is_valid)
-#        self.assertIsNone(error)
+   # def test_valid_xml(self):
+   #     """Test validation with valid XML file."""
+   #     is_valid, error = validate_xml(self.valid_xml, self.xsd_file)
+   #     self.assertTrue(is_valid)
+   #     self.assertIsNone(error)
 
 #    def test_invalid_xml(self):
 #        """Test validation with invalid XML file."""
