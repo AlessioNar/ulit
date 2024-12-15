@@ -11,7 +11,6 @@ class TestHTMLParser(unittest.TestCase):
         self.maxDiff = None  # Allow full diff if needed
         self.parser = HTMLParser()        
         
-
         # Ensure test file exists
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Test file not found at {file_path}")
