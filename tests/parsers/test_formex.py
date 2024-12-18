@@ -21,7 +21,7 @@ class TestFormex4Parser(unittest.TestCase):
     def test_get_metadata(self):
         self.maxDiff = None  # Allow the full diff to be displayed
         
-        self.parser.load_xml(file_path)
+        self.parser.get_root(file_path)
 
         result = self.parser.get_metadata()
         expected = {
@@ -57,33 +57,63 @@ class TestFormex4Parser(unittest.TestCase):
     def test_get_preamble(self):
         """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
         self.maxDiff = None  # Allow full diff if needed
+        self.parser.get_preamble()
         
-        result = self.parser.get_preamble()
+        self.assertIsNotNone(self.parser.preamble)
+        
+    def test_get_preamble_formula(self):
+        initial_statement = {
+            "initial_statement": "THE EUROPEAN COMMISSION,",
+        }
+        pass
+
+    def test_get_preamble_citations(self):
+        
+        self.maxDiff = None  # Allow full diff if needed
+        self.parser.get_preamble()
+        
+        self.parser.get_citations()
+        #self.parser.get_citations()
         
         # Expected preamble structure
         # @todo - see main function
-        expected = {
-            "initial_statement": "THE EUROPEAN COMMISSION,",
-            "quotations": [
-                "Having regard to the Treaty on the Functioning of the European Union,",
-                "Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)", # @incomplete
-                "Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin" # @incomplete
-            ],
-            "consid_init": "Whereas:",
-            "considerations": [
-                {"number": "(1)", "text": "Commission Regulation (EC) No 1484/95"}, # @incomplete
-                {"number": "(2)", "text": "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published."},
-                {"number": "(3)", "text": "In view of the situation on the market, this amendment should be applied as soon as possible."},
-                {"number": "(4)", "text": "The measures provided for in this Regulation are in accordance with the opinion of the Management Committee for the Common Organisation of Agricultural Markets,"}
-            ],
+       
+        citations =  [
+                {'eId': 0, 'citation_text': "Having regard to the Treaty on the Functioning of the European Union,"},
+                {"eId": 1, 'citation_text':"Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)"},
+                {"eId": 2, 'citation_text':"Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin"},
+            ]
+        
+        self.assertEqual(self.parser.citations, citations)
+   
+    
+    def test_get_preamble_recitals(self):
+        """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
+        self.maxDiff = None  # Allow full diff if needed
+        self.parser.get_preamble()
+        self.parser.get_recitals()
+           
+        consid_init = {"consid_init": "Whereas:",}
+        
+        recitals = [
+                {"eId": "(1)", "recital_text": "Commission Regulation (EC) No 1484/95"}, # @incomplete
+                {"eId": "(2)", "recital_text": "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published."},
+                {"eId": "(3)", "recital_text": "In view of the situation on the market, this amendment should be applied as soon as possible."},
+                {"eId": "(4)", "recital_text": "The measures provided for in this Regulation are in accordance with the opinion of the Management Committee for the Common Organisation of Agricultural Markets,"},
+        ]
+        
+        preamble_final = {
             "preamble_final": "HAS ADOPTED THIS REGULATION:"
         }
         
-        self.assertEqual(result, expected)
+        self.assertEqual(self.parser.recitals, recitals)      
     
     def test_get_body(self):
         self.parser.get_body()
         self.assertIsNotNone(self.parser.body, "Body element should not be None")    
+    
+    def test_get_chapters(self):
+        pass
         
     def test_get_articles(self):
         self.parser.get_body()
@@ -104,6 +134,10 @@ class TestFormex4Parser(unittest.TestCase):
         ]
         
         self.assertEqual(self.parser.articles, expected)
+
+    def test_get_conclusions(self):
+        pass
+
 
 # Run the tests
 if __name__ == "__main__":

@@ -1,13 +1,8 @@
-from .parser import Parser
 import re
+import os
+
 from lxml import etree
-from collections import OrderedDict
-import re
-from datetime import date
-
-from lxml import etree, objectify
-from lxml.builder import ElementMaker
-
+from .parser import Parser
 
 FMX_NAMESPACES = {
             'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
@@ -20,21 +15,71 @@ class Formex4Parser(Parser):
         
         """
         # Define the namespace mapping
-        self.root = None
         self.namespaces = {}
-        
-        self.preface = None
+        self.namespaces = FMX_NAMESPACES
+        self.schema = None
+        self.valid = None
+
+        self.root = None
         self.metadata = {}
         
-        self.namespaces = FMX_NAMESPACES
+        self.preface = None
+        
+        self.preamble = None
+        self.formula = None    
+        self.citations = None
+        self.recitals = None
+    
+        self.body = None
+        self.chapters = []
+        self.articles = []
+    
+        self.articles_text = []
+        self.conclusions = None
 
-            
-    def load_xml(self, file):
+    def load_schema(self):
         """
+        Loads the XSD schema for XML validation using an absolute path.
         """
-        with open(file, 'r', encoding='utf-8') as f:
-            tree = etree.parse(f)
-            self.root = tree.getroot()
+        try:
+            # Resolve the absolute path to the XSD file
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            schema_path = os.path.join(base_dir, 'assets', 'formex4.xsd')
+
+            # Parse the schema
+            with open(schema_path, 'r') as f:
+                schema_doc = etree.parse(f)
+                self.schema = etree.XMLSchema(schema_doc)
+            print("Schema loaded successfully.")
+        except Exception as e:
+            print(f"Error loading schema: {e}")
+
+    def validate(self, file: str) -> bool:
+        """
+        Validates an XML file against the loaded XSD schema.
+
+        Args:
+            file (str): Path to the XML file to validate.
+
+        Returns:
+            bool: True if the XML file is valid, False otherwise.
+        """
+        if not self.schema:
+            print("No schema loaded. Please load an XSD schema first.")
+            return False
+
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                xml_doc = etree.parse(f)
+                self.schema.assertValid(xml_doc)
+            print(f"{file} is a valid Formex4 file.")
+            self.valid = True
+        except etree.DocumentInvalid as e:
+            print(f"{file} is not a valid Formex4 file. Validation errors: {e}")
+            self.valid = False
+        except Exception as e:
+            print(f"An error occurred during validation: {e}")
+            self.valid = False
 
     def get_metadata(self):
         """
@@ -93,6 +138,34 @@ class Formex4Parser(Parser):
         self.preface = title_text.strip()
         
         return self.preface
+    
+    def get_citations(self):
+        # Extract each <VISA> element's text in <GR.VISA>
+        citations = []
+        for index, citation in enumerate(self.preamble.findall('.//VISA')):
+            citation_text = "".join(citation.itertext()).strip()  # Using itertext() to get all nested text
+            citation_text = citation_text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
+            citation_text = re.sub(' +', ' ', citation_text)  # replace multiple spaces with a single space
+            
+            citations.append({
+                'eId': index,
+                'citation_text': citation_text
+            })
+                
+        return citations 
+    
+    def get_recitals(self):
+
+        recitals = []
+        # Extract each <TXT> element's text and corresponding <NO.P> number within <CONSID>
+        for recital in self.preamble.findall('.//CONSID'):
+            recital_num = recital.findtext('.//NO.P')
+            recital_text = "".join(recital.find('.//TXT').itertext()).strip()
+            recitals.append({
+                    "eId": recital_num, 
+                    "recital_text": recital_text
+                })
+        return recitals
         
     def get_preamble(self):
         """
@@ -104,41 +177,27 @@ class Formex4Parser(Parser):
         Returns:
             dict: Preamble details, including quotations and considerations.
         """
-        preamble_data = {"initial_statement": None, "quotations": [], "consid_init": None, "considerations": [], "preamble_final": None}
-        preamble = self.root.find('PREAMBLE')
+        preamble_data = {"initial_statement": None, "citations": [], "recitals_init": None, "recitals": [], "preamble_final": None}
+        self.preamble = self.root.find('PREAMBLE')
 
-        if preamble is not None:
+        if self.preamble is not None:
             # Initial statement
-            preamble_data["initial_statement"] = preamble.findtext('PREAMBLE.INIT')
+            preamble_data["initial_statement"] = self.preamble.findtext('PREAMBLE.INIT')
+            
             
             # Removing NOTE tags as they produce noise
-            notes = preamble.findall('.//NOTE')
+            notes = self.preamble.findall('.//NOTE')
             for note in notes:
-                for parent in preamble.iter():
+                for parent in self.preamble.iter():
                     if note in list(parent):
                         parent.remove(note)
             # @todo. In this way we also lose the tail of each XML node NOTE that we remove. This should not happen.
 
+            self.citations = self.get_citations()
+            preamble_data["recitals_init"] = self.preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
+            self.recitals = self.get_recitals()
             
-            # Extract each <VISA> element's text in <GR.VISA>
-            for visa in preamble.findall('.//VISA'):
-                text = "".join(visa.itertext()).strip()  # Using itertext() to get all nested text
-                text = text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
-                text = re.sub(' +', ' ', text)  # replace multiple spaces with a single space
-                preamble_data["quotations"].append(text)
-                
-            self.citations = preamble_data['quotations']
-
-            preamble_data["consid_init"] = preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
-
-            # Extract each <TXT> element's text and corresponding <NO.P> number within <CONSID>
-            for consid in preamble.findall('.//CONSID'):
-                number = consid.findtext('.//NO.P')
-                text = "".join(consid.find('.//TXT').itertext()).strip()
-                preamble_data["considerations"].append({"number": number, "text": text})
-
-            preamble_data["preamble_final"] = preamble.findtext('PREAMBLE.FINAL')
-
+            preamble_data["preamble_final"] = self.preamble.findtext('PREAMBLE.FINAL')
         
         return preamble_data
     
@@ -157,6 +216,14 @@ class Formex4Parser(Parser):
             # Fallback: try without namespace
             self.body = self.root.find('.//ENACTING.TERMS')
     
+    def get_chapter(self) -> None:
+        self.chapters = []
+        chapters = self.root.findall('.//fmx:TITLE', namespaces=self.namespaces)
+        for index, chapter in enumerate(chapters):
+            self.chapters.append({
+                "eId": index,
+                "chapter_text": chapter.get_text(strip=True)
+            })
 
     def get_articles(self):
         """
@@ -191,7 +258,10 @@ class Formex4Parser(Parser):
         Returns:
         dict: Parsed data containing metadata, title, preamble, and articles.
         """
-        self.load_xml(file)
+        self.load_schema()
+        self.validate(file)
+        self.get_root(file)
+        self.get_metadata()
         self.get_preface()
         self.get_preamble()
         self.get_body()
