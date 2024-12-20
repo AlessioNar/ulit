@@ -7,6 +7,8 @@ import os
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..\\data\\formex")
 file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
 
+iopa = ".\\tests\\data\\formex\c008bcb6-e7ec-11ee-9ea8-01aa75ed71a1.0006.02\\DOC_1\\L_202400903EN.000101.fmx.xml"
+
 class TestFormex4Parser(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None  # Allow full diff if needed        
@@ -113,7 +115,22 @@ class TestFormex4Parser(unittest.TestCase):
         self.assertIsNotNone(self.parser.body, "Body element should not be None")    
     
     def test_get_chapters(self):
-        pass
+        """Test retrieval and content of chapter headings."""
+        self.parser = Formex4Parser()
+        self.parser.get_root(iopa)
+        self.parser.get_body()
+        self.parser.get_chapters()
+
+        expected_chapters = [
+            {'eId': 0,  'chapter_heading': 'General provisions', 'chapter_num': 'Chapter 1', },
+            {'eId': 1,  'chapter_heading': 'European Interoperability enablers', 'chapter_num': 'Chapter 2'}, 
+            {'eId': 2,  'chapter_heading': 'Interoperable Europe support measures', 'chapter_num': 'Chapter 3'},
+            {'eId': 3,  'chapter_heading': 'Governance of cross-border interoperability', 'chapter_num': 'Chapter 4'},
+            {'eId': 4, 'chapter_heading': 'Interoperable Europe planning and monitoring', 'chapter_num': 'Chapter 5'},
+            {'eId': 5, 'chapter_heading': 'Final provisions', 'chapter_num': 'Chapter 6'},
+        ]
+        
+        self.assertEqual(self.parser.chapters, expected_chapters, "Chapters data does not match expected content")
         
     def test_get_articles(self):
         self.parser.get_body()

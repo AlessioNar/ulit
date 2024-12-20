@@ -216,14 +216,24 @@ class Formex4Parser(Parser):
             # Fallback: try without namespace
             self.body = self.root.find('.//ENACTING.TERMS')
     
-    def get_chapter(self) -> None:
+    def get_chapters(self) -> None:
         self.chapters = []
-        chapters = self.root.findall('.//fmx:TITLE', namespaces=self.namespaces)
+        chapters = self.body.findall('.//TITLE', namespaces=self.namespaces)
         for index, chapter in enumerate(chapters):
-            self.chapters.append({
-                "eId": index,
-                "chapter_text": chapter.get_text(strip=True)
-            })
+            
+            if len(chapter.findall('.//HT')) > 0:
+                chapter_num = chapter.findall('.//HT')[0]
+                if len(chapter.findall('.//HT')) > 1:      
+                    chapter_heading = chapter.findall('.//HT')[1]
+                    self.chapters.append({
+            
+                        "eId": index,
+                        "chapter_num" : "".join(chapter_num.itertext()).strip(),
+                        "chapter_heading": "".join(chapter_heading.itertext()).strip()
+                    })
+
+            print(self.chapters[index])
+        
 
     def get_articles(self):
         """
@@ -265,4 +275,6 @@ class Formex4Parser(Parser):
         self.get_preface()
         self.get_preamble()
         self.get_body()
+        self.get_chapters()
+        print(self.chapters)
         self.get_articles()

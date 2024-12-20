@@ -8,8 +8,13 @@ import json
 
 # Constants
 BASE_URL = 'http://publications.europa.eu/resource/cellar/'
+ITA_URL = "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20151216&codiceRedaz=15G00214&dataVigenza=20241218"
+#ITA_URL = https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2017-04-24;050
 
-def download_documents(results, download_dir, log_dir, format=None):
+
+#https://www.normattiva.it/do/atto/caricaAKN?dataGU=20170424&codiceRedaz=17G00063&dataVigenza=20241218
+
+def download_documents(results, download_dir, log_dir, format=None, source='cellar'):
     """
     Download Cellar documents in parallel using multiple threads.
 
@@ -30,13 +35,23 @@ def download_documents(results, download_dir, log_dir, format=None):
     The function uses a separate thread for each subset of Cellar ids.
     The number of threads can be adjusted by modifying the `nthreads` parameter.
     """
-    cellar_ids = get_cellar_ids_from_json_results(cellar_results=results, format=format)
+    if source == "cellar":
+        cellar_ids = get_cellar_ids_from_json_results(cellar_results=results, format=format)
 
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    document_paths = download_document(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
-    
-    return document_paths
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        document_paths = download_document(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
+        return document_paths
+    elif source == "normattiva":
+        data_gu = '20170424'
+        codice_redaz = '17G00063'
+        data_vigenza = '20241210'
+        response = fetch_content(f"https://www.normattiva.it/do/atto/caricaAKN?dataGU={data_gu}codiceRedaz={codice_redaz}&dataVigenza={data_vigenza}")
+        #print(f"https://www.normattiva.it/do/atto/caricaAKN?dataGU={data_gu}codiceRedaz={codice_redaz}&dataVigenza={data_vigenza}")
+
+        file_path = handle_response(response=response, folder_path=os.path.join(download_dir), cellar_id='test')
+        print(file_path)
+  
 
 
 def get_cellar_ids_from_json_results(cellar_results, format):
@@ -124,7 +139,7 @@ def download_document(ids: list, folder_path: str, log_dir: str, format: str):
         
         for id in ids:
             print(id)
-            response = fetch_content(id)
+            response = fetch_content(BASE_URL + id)
             file_path = handle_response(response=response, folder_path=folder_path, cellar_id=id)
             file_paths.append(file_path)
         return file_paths
@@ -209,7 +224,7 @@ def save_file(content, file_path, binary=False):
 
 
 # Function to send a GET request to download a zip file for the given id under the CELLAR URI
-def fetch_content(id: str) -> requests.Response:
+def fetch_content(url) -> requests.Response:
     """
     Send a GET request to download a zip file for the given id under the CELLAR URI.
 
@@ -248,7 +263,7 @@ def fetch_content(id: str) -> requests.Response:
     ...     print(response.status_code)
     """
     try:
-        url = BASE_URL + id
+        url = url
         headers = {
             'Accept': "*, application/zip, application/zip;mtype=fmx4, application/xml;mtype=fmx4, application/xhtml+xml, text/html, text/html;type=simplified, application/msword, text/plain, application/xml, application/xml;notice=object",
             'Accept-Language': "eng",
