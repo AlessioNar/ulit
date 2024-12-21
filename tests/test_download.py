@@ -3,18 +3,13 @@ import json
 from ulit.download import download_documents
 import os
 
-#BASE_URL = 
 
-class TestSendSparqlQuery(unittest.TestCase):
+class TestDownload(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        print('testing')
-        
+                
     def test_download_documents(self):
-        
-        self.maxDiff = None  # Allow the full diff to be displayed
-        #sparql_file_path = os.path.join(DATA_DIR, "formex_query.rq")
-
+            
         # Send query
         with open('./tests/metadata/query_results/query_results.json', 'r') as f:
             results = json.loads(f.read())  # Load the JSON data        
