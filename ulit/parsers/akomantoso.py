@@ -53,6 +53,8 @@ class AkomaNtosoParser(Parser):
         self.conclusions = None
         self.schema = None
         self.debug_info = {}
+        self.valid = False
+        self.validation_errors = None
 
         
         # Define the namespace mapping
@@ -644,6 +646,7 @@ class AkomaNtosoParser(Parser):
         except etree.DocumentInvalid as e:
             print(f"{file} is not a valid Akoma Ntoso file. Validation errors: {e}")
             self.valid = False
+            self.validation_errors = e.error_log
         except Exception as e:
             print(f"An error occurred during validation: {e}")
             self.valid = False
