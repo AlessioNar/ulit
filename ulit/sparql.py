@@ -8,6 +8,7 @@ CELLAR IDs from a CSV file.
 """
 
 from SPARQLWrapper import SPARQLWrapper, JSON, POST
+import json
 
 def send_sparql_query(sparql_query_filepath, celex=None):
     """
@@ -112,6 +113,6 @@ def get_results_table(sparql_query):
 # Main function
 if __name__ == "__main__":
 
-    document_paths = send_sparql_query('./tests/query.rq', celex='32024R0903')
-
-    print(document_paths)
+    document_paths = send_sparql_query('./tests/query.rq', celex='32011R0182')# 32024R0903')
+    with open('./tests/metadata/query_results.json', "w") as f:
+        json.dump(document_paths, f, indent=4) 

@@ -4,8 +4,7 @@ import os
 import lxml.etree as etree
 
 # Define constants for file paths and directories
-DATA_DIR = os.path.join(os.path.dirname(__file__), "../data/akn")
-file_path = os.path.join(DATA_DIR, "32014L0092.akn")
+file_path = os.path.join(os.path.dirname(__file__), '..\data\\akn\eu', '32014L0092.akn')
 
 class TestAkomaNtosoParser(unittest.TestCase):
     maxDiff = None
@@ -55,7 +54,10 @@ class TestAkomaNtosoParser(unittest.TestCase):
     def test_get_preamble(self):
         """Test retrieval of preamble data from the XML file."""
         self.parser.get_preamble()
-        self.assertIsNotNone(self.parser.preamble, "Preamble data not found")
+        self.assertIsNotNone(self.parser.formula, "Formula not found")
+        self.assertIsNotNone(self.parser.citations, "Citations data not found")
+        self.assertIsNotNone(self.parser.recitals, "Recitals data not found")
+        
 
     def test_get_preamble_formula(self):
         """Test extraction of formula text within the preamble."""

@@ -9,14 +9,27 @@ class Parser(ABC):
     @abstractmethod
     def parse(self, data):
         pass
+    
+    def get_root(self, file: str):
+        """
+        Parses an XML file and returns its root element.
 
-class XMLParser(Parser):
-    def parse(self, data):
-        # Your XML parsing logic here
-        pass
+        Parameters
+        ----------
+        file : str
+            Path to the XML file.
 
+        Returns
+        -------
+        lxml.etree._Element
+            Root element of the parsed XML document.
+        """
+        with open(file, 'r', encoding='utf-8') as f:
+            tree = etree.parse(f)
+            self.root = tree.getroot()
+            return self.root
 
-def validate_xml(xml_path: str, xsd_path: str) -> Tuple[bool, Union[str, None]]:
+def validate_xml(xml_path: str, xsd_path: str): 
     """
     Validate an XML file against an XSD schema.
     
@@ -54,7 +67,7 @@ def validate_xml(xml_path: str, xsd_path: str) -> Tuple[bool, Union[str, None]]:
         xml_doc = etree.parse(xml_path, parser)
         
         xmlschema.assertValid(xml_doc)
-        return True, None
+        return True
             
     except etree.XMLSyntaxError as e:
         error_msg = f"XML Syntax Error: {str(e)}"

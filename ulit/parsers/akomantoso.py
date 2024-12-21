@@ -24,6 +24,39 @@ class AkomaNtosoParser(Parser):
         Initializes the parser
         
         """
+
+        self.namespaces = {}
+    
+        self.root = None
+        self.meta = None
+    
+        self.meta_identification = None
+    
+        self.meta_proprietary = None
+    
+        self.meta_references = None
+        self.preface = None
+        self.preamble = None
+    
+        self.formula = None
+    
+        self.citations = None
+    
+        self.recitals = None
+        self.act = None
+    
+        self.body = None
+        self.chapters = []
+        self.articles = []
+    
+        self.articles_text = []
+        self.conclusions = None
+        self.schema = None
+        self.debug_info = {}
+        self.valid = False
+        self.validation_errors = None
+
+        
         # Define the namespace mapping
         self.namespaces = {
             'akn': 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0',
@@ -71,26 +104,7 @@ class AkomaNtosoParser(Parser):
         
         return tree
 
-    
-    def get_root(self, file: str):
-        """
-        Parses an XML file and returns its root element.
-
-        Parameters
-        ----------
-        file : str
-            Path to the XML file.
-
-        Returns
-        -------
-        lxml.etree._Element
-            Root element of the parsed XML document.
-        """
-        with open(file, 'r', encoding='utf-8') as f:
-            tree = etree.parse(f)
-            self.root = tree.getroot()
-            return self.root
-    
+    ### Metadata block
     def get_meta(self):
         meta_data = {
             "meta_identification" : self.get_meta_identification(),
@@ -99,8 +113,7 @@ class AkomaNtosoParser(Parser):
         }
 
         self.meta = meta_data
-        
-        
+                
     def get_meta_identification(self):
         """
         Extracts identification metadata from the XML document.
@@ -267,6 +280,7 @@ class AkomaNtosoParser(Parser):
 
         return meta_proprietary
     
+    ### Preface
     def get_preface(self) -> None:
         """
             Extracts paragraphs from the preface section of the document.
@@ -289,6 +303,7 @@ class AkomaNtosoParser(Parser):
 
         self.preface = ' '.join(paragraphs)
     
+    ### Preamble block
     def get_preamble(self):
         """
         Extracts complete preamble data from the document.
@@ -301,12 +316,9 @@ class AkomaNtosoParser(Parser):
             - 'citations': List of citations
             - 'recitals': List of recitals
         """
-        preamble_data = {
-            'formula': self.get_preamble_formula(),
-            'citations': self.get_preamble_citations(),
-            'recitals': self.get_preamble_recitals()
-        }
-        self.preamble = preamble_data
+        self.citations = self.get_preamble_citations()
+        self.formula = self.get_preamble_formula()
+        self.recitals = self.get_preamble_recitals()
     
     def get_preamble_formula(self):
         """
@@ -342,16 +354,18 @@ class AkomaNtosoParser(Parser):
         # Removing all authorialNote nodes
         citations_section = self.remove_node(citations_section, './/akn:authorialNote')
 
-        citations_text = []
+        citations = []
         for citation in citations_section.findall('akn:citation', namespaces=self.namespaces):
             # Collect bare text within each <p> in <citation>            
             citation_text = "".join(citation.itertext()).strip()
+            citation_eId = citation.get('eId')
 
-            citations_text.append({
+            citations.append({
                 'citation_text': citation_text,
+                'eId' : citation_eId,
             })
         
-        return citations_text
+        return citations
     
     def get_preamble_recitals(self):
         """
@@ -367,13 +381,13 @@ class AkomaNtosoParser(Parser):
         if recitals_section is None:
             return None
 
-        recitals_text = []
+        recitals = []
                 
         # Intro
         recitals_intro = recitals_section.find('akn:intro', namespaces=self.namespaces)
         recitals_intro_eId = recitals_intro.get('eId')
         recitals_intro_text = ' '.join(p.text.strip() for p in recitals_intro.findall('akn:p', namespaces=self.namespaces) if p.text)
-        recitals_text.append({
+        recitals.append({
             'recital_text': recitals_intro_text,
             'eId': recitals_intro_eId
         })
@@ -392,13 +406,14 @@ class AkomaNtosoParser(Parser):
             recital_text = re.sub(r'\s+', ' ', recital_text)
 
             # Append the cleaned recital text and eId to the list
-            recitals_text.append({
+            recitals.append({
                 'recital_text': recital_text,
                 'eId': eId
             })
 
-        return recitals_text
+        return recitals
     
+    ### Act block
     def get_act(self) -> None:
         """
         Extracts the act element from the document.
@@ -413,7 +428,8 @@ class AkomaNtosoParser(Parser):
         if self.act is None:
             # Fallback: try without namespace
             self.act = self.root.find('.//act')
-        
+    
+    ### Enacting terms block
     def get_body(self) -> None:
         """
         Extracts the body element from the document.
@@ -625,14 +641,15 @@ class AkomaNtosoParser(Parser):
             with open(file, 'r', encoding='utf-8') as f:
                 xml_doc = etree.parse(f)
                 self.schema.assertValid(xml_doc)
-            print(f"{file} is valid.")
-            return True
+            print(f"{file} is a valid Akoma Ntoso file.")
+            self.valid = True
         except etree.DocumentInvalid as e:
-            print(f"{file} is invalid. Validation errors: {e}")
-            return False
+            print(f"{file} is not a valid Akoma Ntoso file. Validation errors: {e}")
+            self.valid = False
+            self.validation_errors = e.error_log
         except Exception as e:
             print(f"An error occurred during validation: {e}")
-            return False
+            self.valid = False
     
     def parse(self, file: str) -> list[dict]:
         """
@@ -651,63 +668,62 @@ class AkomaNtosoParser(Parser):
                         along with debug information.
         """
         debug_info = {}
-
         try:
             self.load_schema()
             self.validate(file)
+            if self.valid == True:
+                try:
+                    self.get_root(file)
+                    print("Root element loaded successfully.")
+                except Exception as e:
+                    print(f"Error in get_root: {e}")
+
+                try:
+                    self.get_meta()
+                    debug_info['meta'] = self.meta if hasattr(self, 'meta') else "Meta not parsed."
+                    print("Meta parsed successfully.")
+                except Exception as e:
+                    print(f"Error in get_meta: {e}")
+
+                try:
+                    self.get_preface()
+                    debug_info['preface'] = self.preface if hasattr(self, 'preface') else 0
+                    print(f"Preface parsed successfully.")
+                except Exception as e:
+                    print(f"Error in get_preface: {e}")
+
+                try:
+                    self.get_preamble()
+                    print(f"Preamble parsed successfully.")
+                except Exception as e:
+                    print(f"Error in get_preamble: {e}")
+
+                try:
+                    self.get_body()
+                    print("Body parsed successfully.")
+                except Exception as e:
+                    print(f"Error in get_body: {e}")
+
+                try:
+                    self.get_chapters()
+                    debug_info['chapters'] = len(self.chapters) if hasattr(self, 'chapters') else 0
+                    print(f"Chapters parsed successfully. Number of chapters: {debug_info['chapters']}")
+                except Exception as e:
+                    print(f"Error in get_chapters: {e}")
+
+                try:
+                    self.get_articles()
+                    debug_info['articles'] = len(self.articles) if hasattr(self, 'articles') else 0
+                    print(f"Articles parsed successfully. Number of articles: {debug_info['articles']}")
+                except Exception as e:
+                    print(f"Error in get_articles: {e}")
+
+                try:
+                    self.get_conclusions()
+                    debug_info['conclusions'] = self.conclusions if hasattr(self, 'conclusions') else "Conclusions not parsed."
+                    print(f"Conclusions parsed successfully. ")
+                except Exception as e:
+                    print(f"Error in get_conclusions: {e}")
+                
         except Exception as e:
             print(f'Invalid Akoma Ntoso file: parsing may not work or work only partially: {e}')
-
-        try:
-            self.get_root(file)
-            print("Root element loaded successfully.")
-        except Exception as e:
-            print(f"Error in get_root: {e}")
-
-        try:
-            self.get_meta()
-            debug_info['meta'] = self.meta if hasattr(self, 'meta') else "Meta not parsed."
-            print("Meta parsed successfully.")
-        except Exception as e:
-            print(f"Error in get_meta: {e}")
-
-        try:
-            self.get_preface()
-            debug_info['preface'] = self.preface if hasattr(self, 'preface') else 0
-            print(f"Preface parsed successfully. Preface: {debug_info['preface']}")
-        except Exception as e:
-            print(f"Error in get_preface: {e}")
-
-        try:
-            self.get_preamble()
-            debug_info['preamble'] = len(self.preamble['recitals']) if hasattr(self, 'preamble') and 'recitals' in self.preamble else 0
-            print(f"Preamble parsed successfully. Number of recitals: {debug_info['preamble']}")
-        except Exception as e:
-            print(f"Error in get_preamble: {e}")
-
-        try:
-            self.get_body()
-            print("Body parsed successfully.")
-        except Exception as e:
-            print(f"Error in get_body: {e}")
-
-        try:
-            self.get_chapters()
-            debug_info['chapters'] = len(self.chapters) if hasattr(self, 'chapters') else 0
-            print(f"Chapters parsed successfully. Number of chapters: {debug_info['chapters']}")
-        except Exception as e:
-            print(f"Error in get_chapters: {e}")
-
-        try:
-            self.get_articles()
-            debug_info['articles'] = len(self.articles) if hasattr(self, 'articles') else 0
-            print(f"Articles parsed successfully. Number of articles: {debug_info['articles']}")
-        except Exception as e:
-            print(f"Error in get_articles: {e}")
-
-        try:
-            self.get_conclusions()
-            debug_info['conclusions'] = self.conclusions if hasattr(self, 'conclusions') else "Conclusions not parsed."
-            print(f"Conclusions parsed successfully. Conclusions: {self.conclusions}")
-        except Exception as e:
-            print(f"Error in get_conclusions: {e}")
