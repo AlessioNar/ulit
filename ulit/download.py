@@ -11,46 +11,48 @@ BASE_URL = 'http://publications.europa.eu/resource/cellar/'
 ITA_URL = "https://www.normattiva.it/do/atto/caricaAKN?dataGU=20151216&codiceRedaz=15G00214&dataVigenza=20241218"
 #ITA_URL = https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2017-04-24;050
 
-
-#https://www.normattiva.it/do/atto/caricaAKN?dataGU=20170424&codiceRedaz=17G00063&dataVigenza=20241218
-
 def download_documents(results, download_dir, log_dir, format=None, source='cellar'):
     """
-    Download Cellar documents in parallel using multiple threads.
+    Download documents in parallel using multiple threads.
 
-    Sends a REST query to the Publications Office APIs and downloads the documents
+    Sends a REST query to the specified source APIs and downloads the documents
     corresponding to the given results.
 
     Parameters
     ----------
     results : dict
-        A dictionary containing the JSON results from the Publications Office APIs.
+        A dictionary containing the JSON results from the APIs.
     download_dir : str
         The directory where the downloaded documents will be saved.
-    nthreads : int
-        The number of threads to use to make the request
+    log_dir : str
+        The directory where the logs will be saved.
+    format : str, optional
+        The format of the documents to download.
+    source : str, optional
+        The source of the documents ('cellar' or 'normattiva').
 
-    Notes
-    -----
-    The function uses a separate thread for each subset of Cellar ids.
-    The number of threads can be adjusted by modifying the `nthreads` parameter.
+    Returns
+    -------
+    list
+        A list of paths to the downloaded documents.
     """
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
     if source == "cellar":
         cellar_ids = get_cellar_ids_from_json_results(cellar_results=results, format=format)
-
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
         document_paths = download_document(ids=cellar_ids, folder_path=os.path.join(download_dir), log_dir=log_dir, format=format)
         return document_paths
     elif source == "normattiva":
-        data_gu = '20170424'
-        codice_redaz = '17G00063'
-        data_vigenza = '20241210'
-        response = fetch_content(f"https://www.normattiva.it/do/atto/caricaAKN?dataGU={data_gu}codiceRedaz={codice_redaz}&dataVigenza={data_vigenza}")
-        #print(f"https://www.normattiva.it/do/atto/caricaAKN?dataGU={data_gu}codiceRedaz={codice_redaz}&dataVigenza={data_vigenza}")
-
-        file_path = handle_response(response=response, folder_path=os.path.join(download_dir), cellar_id='test')
-        print(file_path)
+        document_paths = []
+        for result in results:
+            data_gu = result.get('dataGU', '20170424')
+            codice_redaz = result.get('codiceRedaz', '17G00063')
+            data_vigenza = result.get('dataVigenza', '20241210')
+            response = fetch_content(f"https://www.normattiva.it/do/atto/caricaAKN?dataGU={data_gu}&codiceRedaz={codice_redaz}&dataVigenza={data_vigenza}")
+            file_path = handle_response(response=response, folder_path=os.path.join(download_dir), cellar_id=f"{data_gu}_{codice_redaz}")
+            document_paths.append(file_path)
+        return document_paths
   
 
 

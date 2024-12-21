@@ -16,7 +16,7 @@ class TestSendSparqlQuery(unittest.TestCase):
         #sparql_file_path = os.path.join(DATA_DIR, "formex_query.rq")
 
         # Send query
-        with open('./metadata/query_results/query_results.json', 'r') as f:
+        with open('./tests/metadata/query_results/query_results.json', 'r') as f:
             results = json.loads(f.read())  # Load the JSON data        
         document_paths = download_documents(results, './tests/data/formex', log_dir='./tests/logs', format='fmx4', source='cellar')
 
