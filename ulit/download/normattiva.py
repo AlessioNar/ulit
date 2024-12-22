@@ -61,11 +61,17 @@ class NormattivaDownloader(DocumentDownloader):
         
     def download(self, dataGU, codiceRedaz, dataVigenza = datetime.today().strftime('%Y%m%d')):     
         document_paths = []
+        
+        # Convert the dataGU to a datetime object
+        dataGU = datetime.strptime(dataGU, '%Y%m%d')
+            
         params = {
-            'dataGU': dataGU,
+            # dataGU as a string in the format YYYYMMDD
+            'dataGU': dataGU.strftime('%Y%m%d'),
             'codiceRedaz': codiceRedaz,
             'dataVigenza': dataVigenza,
-            'date': datetime.strptime(dataGU, '%Y%m%d').strftime('%Y/%m/%d')
+            # dataGU as a string in the format YYYY/MM/DD
+            'date': dataGU.strftime('%Y/%m/%d')
         }
         
         uri, url = self.build_request_url(params)

@@ -69,6 +69,7 @@ class DocumentDownloader:
             'text/plain': 'txt',
             'application/zip': 'zip',
             'text/xml': 'xml',
+            'application/xhtml+xml': 'xhtml',
         }
         for ext, mapped_ext in content_type_mapping.items():
             if ext in content_type:
