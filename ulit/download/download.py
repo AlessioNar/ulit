@@ -19,7 +19,7 @@ class DocumentDownloader:
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
     
-    def handle_response(self, response, cellar_id):
+    def handle_response(self, response, filename):
         """
         Handle a server response by saving or extracting its content.
 
@@ -40,7 +40,7 @@ class DocumentDownloader:
         content_type = response.headers.get('Content-Type', '')
         
         # The return file is usually either a zip file, or a file with the name DOC_* inside a folder named as the cellar_id
-        target_path = os.path.join(self.download_dir, cellar_id)
+        target_path = os.path.join(self.download_dir, filename)
         os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
         if 'zip' in content_type:
@@ -49,7 +49,7 @@ class DocumentDownloader:
         else:
             extension = self.get_extension_from_content_type(content_type)
             if not extension:
-                logging.warning(f"Unknown content type for ID {cellar_id}: {content_type}")
+                logging.warning(f"Unknown content type for ID {filename}: {content_type}")
                 return None
 
             file_path = f"{target_path}.{extension}"

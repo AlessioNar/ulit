@@ -141,7 +141,7 @@ class CellarDownloader(DocumentDownloader):
                 # Send the GET request
                 response = self.fetch_content(url)
                 # Handle the response
-                file_path = self.handle_response(response=response, cellar_id=id)
+                file_path = self.handle_response(response=response, filename=id)
                 # Append the file path to the list
                 document_paths.append(file_path)
                 
