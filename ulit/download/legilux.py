@@ -22,13 +22,14 @@ class LegiluxDownloader(DocumentDownloader):
         return response
 
     def download(self, eli):
+        file_paths = []
         url = self.build_request_url(eli)
         response = self.fetch_content(url)        
         filename = eli.split('loi/')[1].replace('/', '_')
         if response.status_code == 200:
-            file_path = self.handle_response(response, filename=filename)
-            print(f"Document downloaded successfully and saved to {file_path}")
-            return file_path
+            file_paths.append(self.handle_response(response, filename=filename))
+            print(f"Document downloaded successfully and saved to {file_paths}")
+            return file_paths
         else:
             print(f"Failed to download document. Status code: {response.status_code}")
             return None
