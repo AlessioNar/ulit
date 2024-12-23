@@ -259,11 +259,11 @@ class AkomaNtosoParser(XMLParser):
             - 'citations': List of citations
             - 'recitals': List of recitals
         """
-        self.citations = self.get_preamble_citations()
-        self.formula = self.get_preamble_formula()
-        self.recitals = self.get_preamble_recitals()
+        self.citations = self.get_citations()
+        self.formula = self.get_formula()
+        self.recitals = self.get_recitals()
     
-    def get_preamble_formula(self):
+    def get_formula(self):
         """
         Extracts formula text from the preamble.
 
@@ -281,7 +281,7 @@ class AkomaNtosoParser(XMLParser):
         formula_text = ' '.join(p.text.strip() for p in formula.findall('akn:p', namespaces=self.namespaces) if p.text)
         return formula_text
     
-    def get_preamble_citations(self):
+    def get_citations(self):
         """
         Extracts citations from the preamble.
 
@@ -310,7 +310,7 @@ class AkomaNtosoParser(XMLParser):
         
         return citations
     
-    def get_preamble_recitals(self):
+    def get_recitals(self):
         """
         Extracts recitals from the preamble.
 
