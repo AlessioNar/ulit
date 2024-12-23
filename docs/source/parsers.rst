@@ -3,6 +3,11 @@ Parsers
 
 This package contains modules for parsing various types of legal documents. Below are the details for each module.
 
+.. automodule:: parsers.parser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: parsers.formex
     :members:
     :undoc-members:

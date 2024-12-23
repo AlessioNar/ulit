@@ -187,7 +187,7 @@ class HTMLParser(Parser):
 
     def get_articles(self):
         """
-        Extracts articles from the HTML. Each <div> with an id starting with 'art_' is treated as an article (eId).
+        Extracts articles from the HTML. Each <div> with an id starting with "art" is treated as an article (eId).
         Subsequent subdivisions are processed based on the closest parent with an id.
 
         Returns:
