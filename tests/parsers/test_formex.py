@@ -7,7 +7,7 @@ import os
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..\\data\\formex")
 file_path = os.path.join(DATA_DIR, "L_2011334EN.01002501.xml")
 
-iopa = ".\\tests\\data\\formex\c008bcb6-e7ec-11ee-9ea8-01aa75ed71a1.0006.02\\DOC_1\\L_202400903EN.000101.fmx.xml"
+iopa = ".\\tests\\data\\formex\\c008bcb6-e7ec-11ee-9ea8-01aa75ed71a1.0006.02\\DOC_1\\L_202400903EN.000101.fmx.xml"
 
 class TestFormex4Parser(unittest.TestCase):
     def setUp(self):
@@ -82,8 +82,8 @@ class TestFormex4Parser(unittest.TestCase):
        
         citations =  [
                 {'eId': 0, 'citation_text': "Having regard to the Treaty on the Functioning of the European Union,"},
-                {"eId": 1, 'citation_text':"Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation)"},
-                {"eId": 2, 'citation_text':"Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin"},
+                {"eId": 1, 'citation_text':"Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation) , and in particular Article 143 thereof,"},
+                {"eId": 2, 'citation_text':"Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin , and in particular Article 3(4) thereof,"},
             ]
         
         self.assertEqual(self.parser.citations, citations)
@@ -98,7 +98,7 @@ class TestFormex4Parser(unittest.TestCase):
         consid_init = {"consid_init": "Whereas:",}
         
         recitals = [
-                {"eId": "(1)", "recital_text": "Commission Regulation (EC) No 1484/95"}, # @incomplete
+                {"eId": "(1)", "recital_text": "Commission Regulation (EC) No 1484/95 lays down detailed rules for implementing the system of additional import duties and fixes representative prices for poultrymeat and egg products and for egg albumin."}, 
                 {"eId": "(2)", "recital_text": "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published."},
                 {"eId": "(3)", "recital_text": "In view of the situation on the market, this amendment should be applied as soon as possible."},
                 {"eId": "(4)", "recital_text": "The measures provided for in this Regulation are in accordance with the opinion of the Management Committee for the Common Organisation of Agricultural Markets,"},

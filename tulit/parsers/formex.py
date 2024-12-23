@@ -184,14 +184,7 @@ class Formex4Parser(Parser):
             # Initial statement
             preamble_data["initial_statement"] = self.preamble.findtext('PREAMBLE.INIT')
             
-            
-            # Removing NOTE tags as they produce noise
-            notes = self.preamble.findall('.//NOTE')
-            for note in notes:
-                for parent in self.preamble.iter():
-                    if note in list(parent):
-                        parent.remove(note)
-            # @todo. In this way we also lose the tail of each XML node NOTE that we remove. This should not happen.
+            self.preamble = self.remove_node(self.preamble, './/NOTE')
 
             self.citations = self.get_citations()
             preamble_data["recitals_init"] = self.preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
