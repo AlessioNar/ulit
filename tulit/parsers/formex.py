@@ -67,7 +67,38 @@ class Formex4Parser(XMLParser):
                 metadata["doc_number"] = no_doc.findtext('NO.CURRENT')
         
         return metadata
-       
+    
+    def get_preamble(self):
+        """
+        Extracts the preamble section, including initial statements and considerations.
+
+        Returns
+        -------
+        dict
+            Preamble details, including quotations and considerations.
+        """        
+        self.preamble = self.root.find('PREAMBLE', namespaces=self.namespaces)
+
+        if self.preamble is not None:
+            self.preamble = self.remove_node(self.preamble, './/NOTE')
+            self.formula = self.get_formula()
+            self.citations = self.get_citations()            
+            self.recitals = self.get_recitals()
+            
+    
+    def get_formula(self):
+        """
+        Extracts the formula from the preamble.
+
+        Returns
+        -------
+        str
+            Formula text from the preamble.
+        """
+        self.formula = self.preamble.findtext('PREAMBLE.INIT')
+        
+        return self.formula
+
     def get_citations(self):
         """
         Extracts citations from the preamble.
@@ -99,8 +130,14 @@ class Formex4Parser(XMLParser):
         list
             List of dictionaries containing recital text and eId for each recital.
         """
+        #preamble_data["preamble_final"] = self.preamble.findtext('PREAMBLE.FINAL')
+
         recitals = []
-        # Extract each <TXT> element's text and corresponding <NO.P> number within <CONSID>
+        recitals.append({
+            "eId": 'rec_0',
+            "recital_text": self.preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
+            })
+
         for recital in self.preamble.findall('.//CONSID'):
             recital_num = recital.findtext('.//NO.P')
             recital_text = "".join(recital.find('.//TXT').itertext()).strip()
@@ -110,31 +147,7 @@ class Formex4Parser(XMLParser):
                 })
         return recitals
         
-    def get_preamble(self):
-        """
-        Extracts the preamble section, including initial statements and considerations.
-
-        Returns
-        -------
-        dict
-            Preamble details, including quotations and considerations.
-        """
-        preamble_data = {"initial_statement": None, "citations": [], "recitals_init": None, "recitals": [], "preamble_final": None}
-        self.preamble = self.root.find('PREAMBLE')
-
-        if self.preamble is not None:
-            # Initial statement
-            preamble_data["initial_statement"] = self.preamble.findtext('PREAMBLE.INIT')
-            
-            self.preamble = self.remove_node(self.preamble, './/NOTE')
-
-            self.citations = self.get_citations()
-            preamble_data["recitals_init"] = self.preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
-            self.recitals = self.get_recitals()
-            
-            preamble_data["preamble_final"] = self.preamble.findtext('PREAMBLE.FINAL')
-        
-        return preamble_data
+   
     
     def get_chapters(self) -> None:
         """

@@ -53,7 +53,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_preamble(self):
         """Test retrieval of preamble data from the XML file."""
-        self.parser.get_preamble()
+        self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
         self.assertIsNotNone(self.parser.formula, "Formula not found")
         self.assertIsNotNone(self.parser.citations, "Citations data not found")
         self.assertIsNotNone(self.parser.recitals, "Recitals data not found")

@@ -219,6 +219,26 @@ class XMLParser(ABC):
 
         self.preface = ' '.join(paragraphs)
     
+    def get_preamble(self, preamble_xpath, notes_xpath) -> None:
+        """
+        Extracts complete preamble data from the document.
+
+        Returns
+        -------
+        dict
+            Dictionary containing preamble components with keys:
+            - 'formula': Formula text
+            - 'citations': List of citations
+            - 'recitals': List of recitals
+        """
+        self.preamble = self.root.find(preamble_xpath, namespaces=self.namespaces)
+        
+        if self.preamble is not None:            
+            self.preamble = self.remove_node(self.preamble, notes_xpath)
+            self.formula = self.get_formula()
+            self.citations = self.get_citations()
+            self.recitals = self.get_recitals()
+
     ### Enacting terms block
     def get_body(self, body_xpath) -> None:
         """

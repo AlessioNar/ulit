@@ -221,23 +221,6 @@ class AkomaNtosoParser(XMLParser):
 
         return meta_proprietary
     
-    
-    def get_preamble(self):
-        """
-        Extracts complete preamble data from the document.
-
-        Returns
-        -------
-        dict
-            Dictionary containing preamble components with keys:
-            - 'formula': Formula text
-            - 'citations': List of citations
-            - 'recitals': List of recitals
-        """
-        self.citations = self.get_citations()
-        self.formula = self.get_formula()
-        self.recitals = self.get_recitals()
-    
     def get_formula(self):
         """
         Extracts formula text from the preamble.
@@ -284,8 +267,6 @@ class AkomaNtosoParser(XMLParser):
             })
         
         return citations
-    
-    
     
     def get_recitals(self):
         """
@@ -550,7 +531,7 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Error in get_preface: {e}")
 
                 try:
-                    self.get_preamble()
+                    self.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath=".//akn:authorialNote")
                     print(f"Preamble parsed successfully.")
                 except Exception as e:
                     print(f"Error in get_preamble: {e}")

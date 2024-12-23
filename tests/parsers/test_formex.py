@@ -94,10 +94,9 @@ class TestFormex4Parser(unittest.TestCase):
         self.maxDiff = None  # Allow full diff if needed
         self.parser.get_preamble()
         self.parser.get_recitals()
-           
-        consid_init = {"consid_init": "Whereas:",}
         
         recitals = [
+                {"eId": "rec_0", "recital_text": "Whereas:"},
                 {"eId": "(1)", "recital_text": "Commission Regulation (EC) No 1484/95 lays down detailed rules for implementing the system of additional import duties and fixes representative prices for poultrymeat and egg products and for egg albumin."}, 
                 {"eId": "(2)", "recital_text": "Regular monitoring of the data used to determine representative prices for poultrymeat and egg products and for egg albumin shows that the representative import prices for certain products should be amended to take account of variations in price according to origin. The representative prices should therefore be published."},
                 {"eId": "(3)", "recital_text": "In view of the situation on the market, this amendment should be applied as soon as possible."},
