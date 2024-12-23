@@ -1,5 +1,5 @@
 import unittest
-from ulit.parsers.akomantoso import AkomaNtosoParser
+from tulit.parsers.akomantoso import AkomaNtosoParser
 import os
 import lxml.etree as etree
 

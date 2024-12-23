@@ -1,5 +1,5 @@
 import unittest
-from ulit.parsers.formex import Formex4Parser
+from tulit.parsers.formex import Formex4Parser
 import xml.etree.ElementTree as ET
 
 import os 

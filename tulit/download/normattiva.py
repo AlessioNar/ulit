@@ -1,4 +1,4 @@
-from ulit.download.download import DocumentDownloader
+from tulit.download.download import DocumentDownloader
 import requests
 import logging
 from datetime import datetime

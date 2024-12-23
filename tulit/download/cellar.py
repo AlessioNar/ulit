@@ -2,7 +2,7 @@ import logging
 
 import requests
 import json
-from ulit.download.download import DocumentDownloader
+from tulit.download.download import DocumentDownloader
 
 class CellarDownloader(DocumentDownloader):
     

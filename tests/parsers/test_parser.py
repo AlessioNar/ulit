@@ -1,5 +1,5 @@
 import unittest
-from ulit.parsers.parser import validate_xml
+from tulit.parsers.parser import validate_xml
 import os 
 
 file_path = os.path.join(os.path.dirname(__file__), '..\\data\\akn\\eu')

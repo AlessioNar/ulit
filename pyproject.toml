@@ -1,12 +1,12 @@
 [project]
-name = "ulit-python"
+name = "tulit"
 version = "0.0.1"
-description = "ULIT - a Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
+description = "TULIT - The Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
 
 [tool.poetry]
-name = "ulit-python"
+name = "tulit"
 version = "0.0.1"
-description = "ULIT - a Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
+description = "TULIT - The Universal Legal Informatics Toolkit, is set of legal informatics utilities collected in a Python package that focuses on the retrieval of legal data and metadata from official sources in the EU, and their transformation in pythonic data structures"
 authors = ["AlessioNar <alessio.nardin@gmail.com>"]
 license = "EUPL 1.2"
 readme = "README.md"
