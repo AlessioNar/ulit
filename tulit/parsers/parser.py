@@ -196,7 +196,7 @@ class XMLParser(ABC):
         """
         Extracts paragraphs from the preface section of the document.
 
-        Args
+        Parameters
         ----
         preface_xpath : str
             XPath expression to locate the preface element. For Akoma Ntoso, this is usually './/akn:preface', while for Formex it is './/TITLE'.
@@ -221,15 +221,19 @@ class XMLParser(ABC):
     
     def get_preamble(self, preamble_xpath, notes_xpath) -> None:
         """
-        Extracts complete preamble data from the document.
-
+        Extracts the preamble section from the document.
+        
+        Parameters
+        ----------
+        preamble_xpath : str
+            XPath expression to locate the preamble element. For Akoma Ntoso, this is usually './/akn:preamble', while for Formex it is './/PREAMBLE'.
+        notes_xpath : str
+            XPath expression to locate notes within the preamble. For Akoma Ntoso, this is usually './/akn:authorialNote', while for Formex it is './/NOTE'.
+        
         Returns
         -------
-        dict
-            Dictionary containing preamble components with keys:
-            - 'formula': Formula text
-            - 'citations': List of citations
-            - 'recitals': List of recitals
+        None
+            Updates the instance's preamble attribute with the found preamble element, as well as the formula, citations, and recitals.
         """
         self.preamble = self.root.find(preamble_xpath, namespaces=self.namespaces)
         
@@ -244,8 +248,8 @@ class XMLParser(ABC):
         """
         Extracts the body element from the document.
 
-        Args
-        ----
+        Parameters
+        ----------
         body_xpath : str
             XPath expression to locate the body element. For Akoma Ntoso, this is usually './/akn:body', while for Formex it is './/ENACTING.TERMS'.
         
