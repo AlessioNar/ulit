@@ -2,3 +2,4 @@
 tests/logs
 tests/data
 dist/*
+docs/build

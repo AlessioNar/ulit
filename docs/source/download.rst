@@ -1,17 +1,10 @@
-Download Module
+Download
 ===============
 
 This module contains the following submodules:
 
 .. toctree::
     :maxdepth: 2
-
-    cellar
-    normattiva
-    legilux
-
-Submodules
-----------
 
 .. automodule:: tulit.download.download
      :members:
