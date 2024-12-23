@@ -12,7 +12,7 @@ release = '0.0.3'
 version = '0.0.3'
 
 # -- General configuration
-sys.path.insert(0, os.path.abspath('../tulit'))
+sys.path.insert(0, os.path.abspath('../../tulit'))
 
 extensions = [
     'sphinx.ext.duration',

@@ -17,10 +17,8 @@ Contents
    :maxdepth: 2
    :caption: Contents:
 
-   getting started
+   getting_started
 
-Modules
--------
 
 Download
 --------
@@ -29,7 +27,7 @@ Download
    :maxdepth: 2
    :caption: Download:
 
-   download
+   download/modules
 
 Parsers
 -------
