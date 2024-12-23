@@ -4,8 +4,7 @@ Welcome to tulit's documentation!
 **tulit** is a Python library for processing legal documents in various formats,
 including Akoma Ntoso and Formex.
 
-Check out the :doc:`getting started` section for further information, including
-how to :ref:`installation` the project.
+Check out the :doc:`getting started` section for further information.
 
 .. note::
 
