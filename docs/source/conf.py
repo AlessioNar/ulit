@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = 'TULIT'
+project = 'tulit'
 author = 'AlessioNar'
 
 release = '0.0.3'
