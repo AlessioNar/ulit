@@ -6,19 +6,19 @@ Usage
 Installation
 ------------
 
-To use Lumache, first install it using pip:
+To use tulit, first install it using poetry:
 
 .. code-block:: console
 
-   (.venv) $ pip install lumache
+   (.venv) $ poetry shell
+    (.venv) $ poetry install
 
-Creating recipes
+Then, you can import it in your Python code:
 ----------------
 
-To retrieve a list of random ingredients,
-you can use the ``lumache.get_random_ingredients()`` function:
+To parse an Akoma Ntoso document, you can use the ``AkomaNtosoParser`` class:
 
-.. autofunction:: lumache.get_random_ingredients
+.. autofunction:: AkomaNtosoParser()
 
 The ``kind`` parameter should be either ``"meat"``, ``"fish"``,
 or ``"veggies"``. Otherwise, :py:func:`lumache.get_random_ingredients`
