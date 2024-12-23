@@ -33,6 +33,7 @@ intersphinx_disabled_domains = ['std']
 templates_path = ['_templates']
 
 # -- Options for HTML output
+autodocs_mock_imports = ['tulit']
 
 html_theme = 'sphinx_rtd_theme'
 
