@@ -29,10 +29,8 @@ class AkomaNtosoParser(XMLParser):
         
         self.act = None
     
-        self.schema = None
+        
         self.debug_info = {}
-        self.valid = False
-        self.validation_errors = None
 
         
         # Define the namespace mapping
@@ -223,30 +221,7 @@ class AkomaNtosoParser(XMLParser):
 
         return meta_proprietary
     
-    ### Preface
-    def get_preface(self) -> None:
-        """
-        Extracts paragraphs from the preface section of the document.
-
-        Returns
-        -------
-        list or None
-            List of strings containing the text content of each paragraph
-            in the preface. Returns None if no preface is found.
-        """
-        preface = self.root.find('.//akn:preface', namespaces=self.namespaces)
-        if preface is None:
-            return None
-
-        paragraphs = []
-        for p in preface.findall('akn:p', namespaces=self.namespaces):
-            # Join all text parts in <p>, removing any inner tags
-            paragraph_text = ''.join(p.itertext()).strip()
-            paragraphs.append(paragraph_text)
-
-        self.preface = ' '.join(paragraphs)
     
-    ### Preamble block
     def get_preamble(self):
         """
         Extracts complete preamble data from the document.
@@ -310,6 +285,8 @@ class AkomaNtosoParser(XMLParser):
         
         return citations
     
+    
+    
     def get_recitals(self):
         """
         Extracts recitals from the preamble.
@@ -371,23 +348,7 @@ class AkomaNtosoParser(XMLParser):
         if self.act is None:
             # Fallback: try without namespace
             self.act = self.root.find('.//act')
-    
-    ### Enacting terms block
-    def get_body(self) -> None:
-        """
-        Extracts the body element from the document.
-
-        Returns
-        -------
-        None
-            Updates the instance's body attribute with the found body element.
-        """
-        # Use the namespace-aware find
-        self.body = self.root.find('.//akn:body', namespaces=self.namespaces)
-        if self.body is None:
-            # Fallback: try without namespace
-            self.body = self.root.find('.//body')
-    
+        
     def get_chapters(self) -> None:        
         """
         Extracts chapter information from the document.
@@ -548,51 +509,6 @@ class AkomaNtosoParser(XMLParser):
             'date': signature_date,
             'signatures': signatures
         }
-
-    def load_schema(self):
-        """
-        Loads the XSD schema for XML validation using an absolute path.
-        """
-        try:
-            # Resolve the absolute path to the XSD file
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            schema_path = os.path.join(base_dir, 'assets', 'akomantoso30.xsd')
-
-            # Parse the schema
-            with open(schema_path, 'r') as f:
-                schema_doc = etree.parse(f)
-                self.schema = etree.XMLSchema(schema_doc)
-            print("Schema loaded successfully.")
-        except Exception as e:
-            print(f"Error loading schema: {e}")
-
-    def validate(self, file: str) -> bool:
-        """
-        Validates an XML file against the loaded XSD schema.
-
-        Args:
-            file (str): Path to the XML file to validate.
-
-        Returns:
-            bool: True if the XML file is valid, False otherwise.
-        """
-        if not self.schema:
-            print("No schema loaded. Please load an XSD schema first.")
-            return False
-
-        try:
-            with open(file, 'r', encoding='utf-8') as f:
-                xml_doc = etree.parse(f)
-                self.schema.assertValid(xml_doc)
-            print(f"{file} is a valid Akoma Ntoso file.")
-            self.valid = True
-        except etree.DocumentInvalid as e:
-            print(f"{file} is not a valid Akoma Ntoso file. Validation errors: {e}")
-            self.valid = False
-            self.validation_errors = e.error_log
-        except Exception as e:
-            print(f"An error occurred during validation: {e}")
-            self.valid = False
     
     def parse(self, file: str) -> list[dict]:
         """
@@ -610,8 +526,8 @@ class AkomaNtosoParser(XMLParser):
         """
         debug_info = {}
         try:
-            self.load_schema()
-            self.validate(file)
+            self.load_schema('akomantoso30.xsd')
+            self.validate(file, format='Akoma Ntoso')
             if self.valid == True:
                 try:
                     self.get_root(file)
@@ -627,7 +543,7 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Error in get_meta: {e}")
 
                 try:
-                    self.get_preface()
+                    self.get_preface(preface_xpath='.//akn:preface', paragraph_xpath='akn:p')
                     debug_info['preface'] = self.preface if hasattr(self, 'preface') else 0
                     print(f"Preface parsed successfully.")
                 except Exception as e:
@@ -640,7 +556,7 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Error in get_preamble: {e}")
 
                 try:
-                    self.get_body()
+                    self.get_body(body_xpath='.//akn:body')
                     print("Body parsed successfully.")
                 except Exception as e:
                     print(f"Error in get_body: {e}")

@@ -4,7 +4,7 @@ import os
 import lxml.etree as etree
 
 # Define constants for file paths and directories
-file_path = os.path.join(os.path.dirname(__file__), '..\data\\akn\eu', '32014L0092.akn')
+file_path = os.path.join(os.path.dirname(__file__), '..\\data\\akn\\eu', '32014L0092.akn')
 
 class TestAkomaNtosoParser(unittest.TestCase):
     maxDiff = None
@@ -44,7 +44,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_preface(self):
         """Test the content extracted from the preface section."""
-        self.parser.get_preface()
+        self.parser.get_preface(preface_xpath='.//akn:preface', paragraph_xpath='.//akn:p')
         self.assertIsNotNone(self.parser.preface, "Preface element not found")
         
         expected_preface = "Directive 2014/92/EU of the European Parliament and of the Council of 23 July 2014 on the comparability of fees related to payment accounts, payment account switching and access to payment accounts with basic features (Text with EEA relevance)"
@@ -59,23 +59,23 @@ class TestAkomaNtosoParser(unittest.TestCase):
         self.assertIsNotNone(self.parser.recitals, "Recitals data not found")
         
 
-    def test_get_preamble_formula(self):
+    def test_get_formula(self):
         """Test extraction of formula text within the preamble."""
-        formula_data = self.parser.get_preamble_formula()
+        formula_data = self.parser.get_formula()
         self.assertIn("THE EUROPEAN PARLIAMENT AND THE COUNCIL OF THE EUROPEAN UNION", formula_data)
 
-    def test_get_preamble_citations(self):
+    def test_get_citations(self):
         """Test citation extraction in the preamble section."""
-        citations_data = self.parser.get_preamble_citations()
+        citations_data = self.parser.get_citations()
         self.assertGreater(len(citations_data), 0, "No citations found in preamble")
         
         first_citation = citations_data[0]
         expected_text = "Having regard to the Treaty on the Functioning of the European Union, and in particular Article 114"
         self.assertIn(expected_text, first_citation['citation_text'])
 
-    def test_get_preamble_recitals(self):
+    def test_get_recitals(self):
         """Test retrieval and content verification of recitals in the preamble."""
-        recitals_data = self.parser.get_preamble_recitals()
+        recitals_data = self.parser.get_recitals()
         self.assertIsNotNone(recitals_data, "Recitals section not found in <preamble>")
         self.assertEqual(len(recitals_data), 59, "Incorrect number of recitals extracted")
         expected_recitals = {
@@ -99,12 +99,12 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_body(self):
         """Test retrieval of the body element."""
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//akn:body')
         self.assertIsInstance(self.parser.body, etree._Element, "Body element should be an etree._Element")
 
     def test_get_chapters(self):
         """Test retrieval and content of chapter headings."""
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//akn:body')
         self.parser.get_chapters()
 
         expected_chapters = [
@@ -120,7 +120,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_articles(self):
         """Test retrieval of articles within the body."""
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//akn:body')
         self.parser.get_articles()
         
         self.assertEqual(len(self.parser.articles), 31, "Incorrect number of articles extracted")

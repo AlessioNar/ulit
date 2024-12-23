@@ -14,11 +14,7 @@ class Formex4Parser(XMLParser):
 
     Attributes
     ----------
-    
-    schema : lxml.etree.XMLSchema or None
-        The XML schema used for validation.
-    valid : bool or None
-        Indicates whether the XML file is valid against the schema.
+
     metadata : dict
         Extracted metadata from the XML document.
 
@@ -34,55 +30,7 @@ class Formex4Parser(XMLParser):
             'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
         }
 
-        self.schema = None
-        self.valid = None
-
         self.metadata = {}
-        
-
-    def load_schema(self):
-        """
-        Loads the XSD schema for XML validation using an absolute path.
-        """
-        try:
-            # Resolve the absolute path to the XSD file
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            schema_path = os.path.join(base_dir, 'assets', 'formex4.xsd')
-
-            # Parse the schema
-            with open(schema_path, 'r') as f:
-                schema_doc = etree.parse(f)
-                self.schema = etree.XMLSchema(schema_doc)
-            print("Schema loaded successfully.")
-        except Exception as e:
-            print(f"Error loading schema: {e}")
-
-    def validate(self, file: str) -> bool:
-        """
-        Validates an XML file against the loaded XSD schema.
-
-        Args:
-            file (str): Path to the XML file to validate.
-
-        Returns:
-            bool: True if the XML file is valid, False otherwise.
-        """
-        if not self.schema:
-            print("No schema loaded. Please load an XSD schema first.")
-            return False
-
-        try:
-            with open(file, 'r', encoding='utf-8') as f:
-                xml_doc = etree.parse(f)
-                self.schema.assertValid(xml_doc)
-            print(f"{file} is a valid Formex4 file.")
-            self.valid = True
-        except etree.DocumentInvalid as e:
-            print(f"{file} is not a valid Formex4 file. Validation errors: {e}")
-            self.valid = False
-        except Exception as e:
-            print(f"An error occurred during validation: {e}")
-            self.valid = False
 
     def get_metadata(self):
         """
@@ -119,27 +67,7 @@ class Formex4Parser(XMLParser):
                 metadata["doc_number"] = no_doc.findtext('NO.CURRENT')
         
         return metadata
-
-    def get_preface(self):
-        """
-        Extracts title information from the TITLE section.
-
-        Returns
-        -------
-        str
-            Concatenated title text.
-        """
-        title_element = self.root.find('TITLE')
-        title_text = ""
-        
-        if title_element is not None:
-            for paragraph in title_element.iter('P'):
-                paragraph_text = "".join(paragraph.itertext()).strip()
-                title_text += paragraph_text + " "
-        self.preface = title_text.strip()
-        
-        return self.preface
-    
+       
     def get_citations(self):
         """
         Extracts citations from the preamble.
@@ -208,21 +136,6 @@ class Formex4Parser(XMLParser):
         
         return preamble_data
     
-    def get_body(self) -> None:
-        """
-        Extracts the enacting terms element from the document.
-
-        Returns
-        -------
-        None
-            Updates the instance's body attribute with the found body element.
-        """
-        # Use the namespace-aware find
-        self.body = self.root.find('.//fmx:ENACTING.TERMS', namespaces=self.namespaces)
-        if self.body is None:
-            # Fallback: try without namespace
-            self.body = self.root.find('.//ENACTING.TERMS')
-    
     def get_chapters(self) -> None:
         """
         Extracts chapter information from the document.
@@ -285,12 +198,12 @@ class Formex4Parser(XMLParser):
         dict
             Parsed data containing metadata, title, preamble, and articles.
         """
-        self.load_schema()
-        self.validate(file)
+        self.load_schema('formex4.xsd')
+        self.validate(file, format = 'Formex 4')
         self.get_root(file)
         self.get_metadata()
-        self.get_preface()
+        self.get_preface(preface_xpath='.//TITLE', paragraph_xpath='.//P')
         self.get_preamble()
-        self.get_body()
+        self.get_body(body_xpath='.//ENACTING.TERMS')
         self.get_chapters()
         self.get_articles()

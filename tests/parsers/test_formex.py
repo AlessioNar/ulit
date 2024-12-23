@@ -48,7 +48,7 @@ class TestFormex4Parser(unittest.TestCase):
         self.maxDiff = None  # Allow full diff if needed
     
     
-        result = self.parser.get_preface()
+        self.parser.get_preface(preface_xpath='.//TITLE', paragraph_xpath='.//P')
         expected = (
             "Commission Implementing Regulation (EU) No 1319/2011 of 15 December 2011 "
             "fixing representative prices in the poultrymeat and egg sectors and for egg "
@@ -111,14 +111,14 @@ class TestFormex4Parser(unittest.TestCase):
         self.assertEqual(self.parser.recitals, recitals)      
     
     def test_get_body(self):
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//ENACTING.TERMS')
         self.assertIsNotNone(self.parser.body, "Body element should not be None")    
     
     def test_get_chapters(self):
         """Test retrieval and content of chapter headings."""
         self.parser = Formex4Parser()
         self.parser.get_root(iopa)
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//ENACTING.TERMS')
         self.parser.get_chapters()
 
         expected_chapters = [
@@ -133,7 +133,7 @@ class TestFormex4Parser(unittest.TestCase):
         self.assertEqual(self.parser.chapters, expected_chapters, "Chapters data does not match expected content")
         
     def test_get_articles(self):
-        self.parser.get_body()
+        self.parser.get_body(body_xpath='.//ENACTING.TERMS')
         self.parser.get_articles()
         
         # Expected articles based on sample data in XML file
