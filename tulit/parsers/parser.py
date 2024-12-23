@@ -112,7 +112,7 @@ class XMLParser(ABC):
         file : str
             Path to the XML file to validate.    
         
-        Returns:
+        Returns
         --------
         bool
             Sets the valid attribute to True if the file is valid, False otherwise.
