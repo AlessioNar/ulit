@@ -22,11 +22,11 @@ Contents
    usage
    api
 
-API Documentation
+Parsers
 -----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference:
+   :caption: Parsers:
 
-   api/modules
+   parsers/modules

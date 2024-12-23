@@ -1,4 +1,4 @@
-API Reference
+Parsers
 =============
 
 .. automodule:: tulit.parsers.akomantoso
