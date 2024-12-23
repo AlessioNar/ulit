@@ -1,11 +1,10 @@
-Welcome to ulit's documentation!
+Welcome to tulit's documentation!
 ===================================
 
-**ulit** is a Python library for cooks and food lovers
-that creates recipes mixing random ingredients.
+**tulit** is a Python library for processing legal documents in various formats,
+including Akoma Ntoso and Formex.
 
-
-Check out the :doc:`usage` section for further information, including
+Check out the :doc:`getting started` section for further information, including
 how to :ref:`installation` the project.
 
 .. note::
@@ -21,20 +20,23 @@ Contents
 
    getting started
 
+Modules
+-------
+
 Download
 --------
+
 .. toctree::
    :maxdepth: 2
    :caption: Download:
 
    download
 
-
 Parsers
------------------
+-------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Akoma Ntoso Parser:
+   :caption: Parsers:
 
    parsers/modules
