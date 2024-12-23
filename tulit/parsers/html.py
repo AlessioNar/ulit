@@ -1,8 +1,6 @@
-from .parser import Parser
-import re
 from bs4 import BeautifulSoup
 
-class HTMLParser(Parser):
+class HTMLParser():
     def __init__(self):
         """
         Initializes the HTML parser and sets up the BeautifulSoup instance.

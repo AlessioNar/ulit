@@ -1,9 +1,9 @@
-from .parser import Parser
+from .parser import XMLParser
 import re
 from lxml import etree
 import os
 
-class AkomaNtosoParser(Parser):
+class AkomaNtosoParser(XMLParser):
     """
     A parser for processing and extracting content from Akoma Ntoso XML files.
 
@@ -20,33 +20,15 @@ class AkomaNtosoParser(Parser):
         """
         Initializes the parser.
         """
-
-        self.namespaces = {}
-    
-        self.root = None
+        
         self.meta = None
     
-        self.meta_identification = None
-    
+        self.meta_identification = None    
         self.meta_proprietary = None
-    
         self.meta_references = None
-        self.preface = None
-        self.preamble = None
-    
-        self.formula = None
-    
-        self.citations = None
-    
-        self.recitals = None
+        
         self.act = None
     
-        self.body = None
-        self.chapters = []
-        self.articles = []
-    
-        self.articles_text = []
-        self.conclusions = None
         self.schema = None
         self.debug_info = {}
         self.valid = False

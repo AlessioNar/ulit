@@ -1,11 +1,67 @@
 from abc import ABC, abstractmethod
-import os
 from lxml import etree
-from typing import Union, Tuple
-import logging
 
 
-class Parser(ABC):
+class XMLParser(ABC):
+    """
+    Abstract base class for XML parsers.
+    
+    Attributes
+    ----------
+    root : lxml.etree._Element
+        Root element of the XML document.
+    namespaces : dict
+        Dictionary containing XML namespaces.
+    preface : str or None
+        Extracted preface text from the XML document.
+    preamble : lxml.etree.Element or None
+        The preamble section of the XML document.
+    formula : None
+        Placeholder for future use.
+    citations : list or None
+        List of extracted citations from the preamble.
+    recitals : list or None
+        List of extracted recitals from the preamble.
+    body : lxml.etree.Element or None
+        The body section of the XML document.
+    chapters : list
+        List of extracted chapters from the body.
+    articles : list
+        List of extracted articles from the body.
+    articles_text : list
+        List of extracted article texts.
+    conclusions : None
+        Placeholder for future use.
+    """
+    
+    def __init__(self):
+        """
+        Initializes the Parser object.
+
+        Parameters
+        ----------
+        file : str
+            Path to the XML file.
+        namespaces : dict
+            Dictionary containing XML namespaces.
+        """
+        self.root = None
+        self.namespaces = {}
+        
+        self.preface = None
+
+        self.preamble = None
+        self.formula = None    
+        self.citations = None
+        self.recitals = None
+    
+        self.body = None
+        self.chapters = []
+        self.articles = []
+        self.conclusions = None
+        
+        self.articles_text = []
+        
     @abstractmethod
     def parse(self):
         """
