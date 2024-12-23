@@ -21,7 +21,7 @@ class TestDocumentDownloader(unittest.TestCase):
             actual_extension = self.downloader.get_extension_from_content_type(content_type)
             self.assertEqual(actual_extension, expected_extension)
 
-    @patch('ulit.download.download.zipfile.ZipFile')
+    @patch('tulit.download.download.zipfile.ZipFile')
     def test_extract_zip(self, mock_zipfile):
         # Mock zipfile object
         mock_zip = Mock()
@@ -38,8 +38,8 @@ class TestDocumentDownloader(unittest.TestCase):
         self.assertEqual(args[0].getvalue(), response.content)
         mock_zip.extractall.assert_called_once_with(folder_path)
     
-    @patch('ulit.download.download.DocumentDownloader.extract_zip')
-    @patch('ulit.download.download.os.makedirs')
+    @patch('tulit.download.download.DocumentDownloader.extract_zip')
+    @patch('tulit.download.download.os.makedirs')
     def test_handle_response(self, mock_makedirs, mock_extract_zip):
         # Mock response object
         response = Mock()

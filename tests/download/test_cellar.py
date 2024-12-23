@@ -46,7 +46,7 @@ class TestCellarDownloader(unittest.TestCase):
         actual_url = self.downloader.build_request_url(params)
         self.assertEqual(actual_url, expected_url)
     
-    @patch('ulit.download.download.requests.request')
+    @patch('tulit.download.download.requests.request')
     def test_fetch_content(self, mock_request):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -68,7 +68,7 @@ class TestCellarDownloader(unittest.TestCase):
         # Check that the response is as expected
         self.assertEqual(response, mock_response)
 
-    @patch('ulit.download.download.requests.request')
+    @patch('tulit.download.download.requests.request')
     def test_fetch_content_request_exception(self, mock_request):
         # Mock request to raise a RequestException
         mock_request.side_effect = requests.RequestException("Error sending GET request")

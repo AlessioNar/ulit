@@ -7,7 +7,7 @@ class TestNormattivaDownloader(unittest.TestCase):
     def setUp(self):
         self.downloader = NormattivaDownloader(download_dir='./tests/data/akn/italy', log_dir='./tests/logs')
     
-    @patch('ulit.download.normattiva.requests.get')
+    @patch('tulit.download.normattiva.requests.get')
     def test_build_request_url(self, mock_get):
         params = {
             'dataGU': '20210101',
@@ -21,7 +21,7 @@ class TestNormattivaDownloader(unittest.TestCase):
         self.assertEqual(uri, expected_uri)
         self.assertEqual(url, expected_url)
     
-    @patch('ulit.download.normattiva.requests.get')
+    @patch('tulit.download.normattiva.requests.get')
     def test_fetch_content(self, mock_get):
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
@@ -34,8 +34,8 @@ class TestNormattivaDownloader(unittest.TestCase):
         response = self.downloader.fetch_content(uri, url)
         self.assertEqual(response, mock_response)
     
-    @patch('ulit.download.normattiva.requests.get')
-    @patch('ulit.download.normattiva.NormattivaDownloader.handle_response')
+    @patch('tulit.download.normattiva.requests.get')
+    @patch('tulit.download.normattiva.NormattivaDownloader.handle_response')
     def test_download(self, mock_handle_response, mock_get):
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
