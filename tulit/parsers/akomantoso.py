@@ -3,8 +3,6 @@ import re
 from lxml import etree
 import os
 
-
-
 class AkomaNtosoParser(Parser):
     """
     A parser for processing and extracting content from Akoma Ntoso XML files.
