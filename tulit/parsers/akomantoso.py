@@ -330,7 +330,7 @@ class AkomaNtosoParser(XMLParser):
             # Fallback: try without namespace
             self.act = self.root.find('.//act')
         
-    def get_chapters(self) -> None:        
+    def get_chapters(self, chapter_xpath) -> None:        
         """
         Extracts chapter information from the document.
 
@@ -345,7 +345,7 @@ class AkomaNtosoParser(XMLParser):
         self.chapters = []  # Reset chapters list
         
         # Find all <chapter> elements in the body
-        for chapter in self.root.findall('.//akn:chapter', namespaces=self.namespaces):
+        for chapter in self.body.findall(chapter_xpath, namespaces=self.namespaces):
             eId = chapter.get('eId')
             chapter_num = chapter.find('akn:num', namespaces=self.namespaces)
             chapter_heading = chapter.find('akn:heading', namespaces=self.namespaces)
@@ -543,7 +543,7 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Error in get_body: {e}")
 
                 try:
-                    self.get_chapters()
+                    self.get_chapters(chapter_xpath='.//akn:chapter')
                     debug_info['chapters'] = len(self.chapters) if hasattr(self, 'chapters') else 0
                     print(f"Chapters parsed successfully. Number of chapters: {debug_info['chapters']}")
                 except Exception as e:

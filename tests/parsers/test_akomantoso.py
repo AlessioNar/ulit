@@ -105,7 +105,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
     def test_get_chapters(self):
         """Test retrieval and content of chapter headings."""
         self.parser.get_body(body_xpath='.//akn:body')
-        self.parser.get_chapters()
+        self.parser.get_chapters(chapter_xpath='.//akn:chapter')
 
         expected_chapters = [
             {'eId': 'chp_I', 'chapter_num': 'CHAPTER I', 'chapter_heading': 'SUBJECT MATTER, SCOPE AND DEFINITIONS'},
