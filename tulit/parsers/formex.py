@@ -4,10 +4,6 @@ import os
 from lxml import etree
 from .parser import Parser
 
-FMX_NAMESPACES = {
-    'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
-}
-
 class Formex4Parser(Parser):
     """
     A parser for processing and extracting content from Formex XML files.
@@ -20,6 +16,34 @@ class Formex4Parser(Parser):
     ----------
     namespaces : dict
         Dictionary mapping namespace prefixes to their URIs.
+    schema : lxml.etree.XMLSchema or None
+        The XML schema used for validation.
+    valid : bool or None
+        Indicates whether the XML file is valid against the schema.
+    root : lxml.etree.Element or None
+        The root element of the parsed XML document.
+    metadata : dict
+        Extracted metadata from the XML document.
+    preface : str or None
+        Extracted preface text from the XML document.
+    preamble : lxml.etree.Element or None
+        The preamble section of the XML document.
+    formula : None
+        Placeholder for future use.
+    citations : list or None
+        List of extracted citations from the preamble.
+    recitals : list or None
+        List of extracted recitals from the preamble.
+    body : lxml.etree.Element or None
+        The body section of the XML document.
+    chapters : list
+        List of extracted chapters from the body.
+    articles : list
+        List of extracted articles from the body.
+    articles_text : list
+        List of extracted article texts.
+    conclusions : None
+        Placeholder for future use.
     """
 
     def __init__(self):
@@ -27,8 +51,11 @@ class Formex4Parser(Parser):
         Initializes the parser.
         """
         # Define the namespace mapping
-        self.namespaces = {}
-        self.namespaces = FMX_NAMESPACES
+        
+        self.namespaces = {
+            'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
+        }
+
         self.schema = None
         self.valid = None
 

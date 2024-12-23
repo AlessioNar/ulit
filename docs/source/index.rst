@@ -14,17 +14,17 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    getting_started
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    download
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    parsers
 

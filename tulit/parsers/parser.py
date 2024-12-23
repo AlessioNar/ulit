@@ -7,7 +7,10 @@ import logging
 
 class Parser(ABC):
     @abstractmethod
-    def parse(self, data):
+    def parse(self):
+        """
+        Abstract method to parse the data. This method must be implemented by the subclass.
+        """
         pass
     
     def get_root(self, file: str):
@@ -31,19 +34,19 @@ class Parser(ABC):
         
     def remove_node(self, tree, node):
         """
-            Removes specified nodes from the XML tree while preserving their tail text.
-
-            Parameters
-            ----------
-            tree : lxml.etree._Element
-                The XML tree or subtree to process.
-            node : str
-                XPath expression identifying the nodes to remove.
-
-            Returns
-            -------
-            lxml.etree._Element
-                The modified XML tree with specified nodes removed.
+        Removes specified nodes from the XML tree while preserving their tail text.
+        
+        Parameters
+        ----------
+        tree : lxml.etree._Element
+            The XML tree or subtree to process.
+        node : str
+            XPath expression identifying the nodes to remove.
+        
+        Returns
+        -------
+        lxml.etree._Element
+            The modified XML tree with specified nodes removed.
         """
         if tree.findall(node, namespaces=self.namespaces) is not None:
             for item in tree.findall(node, namespaces=self.namespaces):
