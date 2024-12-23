@@ -15,12 +15,10 @@ class AkomaNtosoParser(Parser):
     ----------
     namespaces : dict
         Dictionary mapping namespace prefixes to their URIs.
-
     """
     def __init__(self):
         """
-        Initializes the parser
-        
+        Initializes the parser.
         """
 
         self.namespaces = {}
@@ -66,6 +64,9 @@ class AkomaNtosoParser(Parser):
 
     ### Metadata block
     def get_meta(self):
+        """
+        Extracts metadata from the document.
+        """
         meta_data = {
             "meta_identification" : self.get_meta_identification(),
             "meta_proprietary" : self.get_meta_proprietary(),
@@ -243,14 +244,14 @@ class AkomaNtosoParser(Parser):
     ### Preface
     def get_preface(self) -> None:
         """
-            Extracts paragraphs from the preface section of the document.
+        Extracts paragraphs from the preface section of the document.
 
-            Returns
-            -------
-            list or None
-                List of strings containing the text content of each paragraph
-                in the preface. Returns None if no preface is found.
-            """
+        Returns
+        -------
+        list or None
+            List of strings containing the text content of each paragraph
+            in the preface. Returns None if no preface is found.
+        """
         preface = self.root.find('.//akn:preface', namespaces=self.namespaces)
         if preface is None:
             return None

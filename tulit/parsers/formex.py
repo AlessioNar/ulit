@@ -5,14 +5,26 @@ from lxml import etree
 from .parser import Parser
 
 FMX_NAMESPACES = {
-            'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
-        }
+    'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
+}
 
 class Formex4Parser(Parser):
+    """
+    A parser for processing and extracting content from Formex XML files.
+
+    The parser handles XML documents following the Formex schema for legal documents,
+    providing methods to extract various components like metadata, preface, preamble,
+    and articles.
+
+    Attributes
+    ----------
+    namespaces : dict
+        Dictionary mapping namespace prefixes to their URIs.
+    """
+
     def __init__(self):
         """
-        Initializes the parser
-        
+        Initializes the parser.
         """
         # Define the namespace mapping
         self.namespaces = {}
@@ -85,11 +97,10 @@ class Formex4Parser(Parser):
         """
         Extracts metadata information from the BIB.INSTANCE section.
 
-        Args:
-        root (Element): Root XML element.
-
-        Returns:
-        dict: Extracted metadata.
+        Returns
+        -------
+        dict
+            Extracted metadata.
         """
         metadata = {}
         bib_instance = self.root.find('BIB.INSTANCE')
@@ -122,11 +133,10 @@ class Formex4Parser(Parser):
         """
         Extracts title information from the TITLE section.
 
-        Args:
-        root (Element): Root XML element.
-
-        Returns:
-        str: Concatenated title text.
+        Returns
+        -------
+        str
+            Concatenated title text.
         """
         title_element = self.root.find('TITLE')
         title_text = ""
@@ -140,7 +150,14 @@ class Formex4Parser(Parser):
         return self.preface
     
     def get_citations(self):
-        # Extract each <VISA> element's text in <GR.VISA>
+        """
+        Extracts citations from the preamble.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing citation text.
+        """
         citations = []
         for index, citation in enumerate(self.preamble.findall('.//VISA')):
             citation_text = "".join(citation.itertext()).strip()  # Using itertext() to get all nested text
@@ -155,7 +172,14 @@ class Formex4Parser(Parser):
         return citations 
     
     def get_recitals(self):
+        """
+        Extracts recitals from the preamble.
 
+        Returns
+        -------
+        list
+            List of dictionaries containing recital text and eId for each recital.
+        """
         recitals = []
         # Extract each <TXT> element's text and corresponding <NO.P> number within <CONSID>
         for recital in self.preamble.findall('.//CONSID'):
@@ -171,11 +195,10 @@ class Formex4Parser(Parser):
         """
         Extracts the preamble section, including initial statements and considerations.
 
-        Args:
-            root (Element): Root XML element.
-
-        Returns:
-            dict: Preamble details, including quotations and considerations.
+        Returns
+        -------
+        dict
+            Preamble details, including quotations and considerations.
         """
         preamble_data = {"initial_statement": None, "citations": [], "recitals_init": None, "recitals": [], "preamble_final": None}
         self.preamble = self.root.find('PREAMBLE')
@@ -210,6 +233,17 @@ class Formex4Parser(Parser):
             self.body = self.root.find('.//ENACTING.TERMS')
     
     def get_chapters(self) -> None:
+        """
+        Extracts chapter information from the document.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing chapter data with keys:
+            - 'eId': Chapter identifier
+            - 'chapter_num': Chapter number
+            - 'chapter_heading': Chapter heading text
+        """
         self.chapters = []
         chapters = self.body.findall('.//TITLE', namespaces=self.namespaces)
         for index, chapter in enumerate(chapters):
@@ -230,11 +264,10 @@ class Formex4Parser(Parser):
         """
         Extracts articles from the ENACTING.TERMS section.
 
-        Args:
-        root (Element): Root XML element.
-
-        Returns:
-        list: Articles with identifier and content.
+        Returns
+        -------
+        list
+            Articles with identifier and content.
         """
         self.articles = []
         if self.body is not None:
@@ -254,10 +287,12 @@ class Formex4Parser(Parser):
         Parses a FORMEX XML document to extract metadata, title, preamble, and enacting terms.
 
         Args:
-        file (str): Path to the FORMEX XML file.
+            file (str): Path to the FORMEX XML file.
 
-        Returns:
-        dict: Parsed data containing metadata, title, preamble, and articles.
+        Returns
+        -------
+        dict
+            Parsed data containing metadata, title, preamble, and articles.
         """
         self.load_schema()
         self.validate(file)

@@ -16,5 +16,17 @@ Contents
 --------
 
 .. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
    usage
+   api
+
+API Documentation
+-----------------
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference:
+
+   api/modules
