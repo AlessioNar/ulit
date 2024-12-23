@@ -59,26 +59,23 @@ class TestFormex4Parser(unittest.TestCase):
     def test_get_preamble(self):
         """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
         self.maxDiff = None  # Allow full diff if needed
-        self.parser.get_preamble()
+        self.parser.get_preamble(preamble_xpath='.//PREAMBLE', notes_xpath='.//NOTE')
         
         self.assertIsNotNone(self.parser.preamble)
         
-    def test_get_preamble_formula(self):
+    def test_get_formula(self):
         initial_statement = {
             "initial_statement": "THE EUROPEAN COMMISSION,",
         }
         pass
 
-    def test_get_preamble_citations(self):
+    def test_get_citations(self):
         
         self.maxDiff = None  # Allow full diff if needed
-        self.parser.get_preamble()
+        self.parser.get_preamble(preamble_xpath='.//PREAMBLE', notes_xpath='.//NOTE')
         
         self.parser.get_citations()
-        #self.parser.get_citations()
         
-        # Expected preamble structure
-        # @todo - see main function
        
         citations =  [
                 {'eId': 0, 'citation_text': "Having regard to the Treaty on the Functioning of the European Union,"},
@@ -89,10 +86,10 @@ class TestFormex4Parser(unittest.TestCase):
         self.assertEqual(self.parser.citations, citations)
    
     
-    def test_get_preamble_recitals(self):
+    def test_get_recitals(self):
         """Test parsing the preamble section with quotations and numbered considerations in Formex4Parser."""
         self.maxDiff = None  # Allow full diff if needed
-        self.parser.get_preamble()
+        self.parser.get_preamble(preamble_xpath='.//PREAMBLE', notes_xpath='.//NOTE')
         self.parser.get_recitals()
         
         recitals = [

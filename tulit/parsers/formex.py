@@ -68,24 +68,7 @@ class Formex4Parser(XMLParser):
         
         return metadata
     
-    def get_preamble(self):
-        """
-        Extracts the preamble section, including initial statements and considerations.
-
-        Returns
-        -------
-        dict
-            Preamble details, including quotations and considerations.
-        """        
-        self.preamble = self.root.find('PREAMBLE', namespaces=self.namespaces)
-
-        if self.preamble is not None:
-            self.preamble = self.remove_node(self.preamble, './/NOTE')
-            self.formula = self.get_formula()
-            self.citations = self.get_citations()            
-            self.recitals = self.get_recitals()
-            
-    
+        
     def get_formula(self):
         """
         Extracts the formula from the preamble.
@@ -216,7 +199,7 @@ class Formex4Parser(XMLParser):
         self.get_root(file)
         self.get_metadata()
         self.get_preface(preface_xpath='.//TITLE', paragraph_xpath='.//P')
-        self.get_preamble()
+        self.get_preamble(preamble_xpath='.//PREAMBLE', notes_xpath='.//NOTE')
         self.get_body(body_xpath='.//ENACTING.TERMS')
         self.get_chapters()
         self.get_articles()
