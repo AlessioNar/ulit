@@ -1,6 +1,6 @@
 import unittest
 import json
-from ulit.download.cellar import CellarDownloader
+from tulit.download.cellar import CellarDownloader
 import os
 from unittest.mock import patch, Mock
 import requests

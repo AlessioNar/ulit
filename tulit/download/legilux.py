@@ -1,5 +1,5 @@
 import requests
-from ulit.download.download import DocumentDownloader
+from tulit.download.download import DocumentDownloader
 
 class LegiluxDownloader(DocumentDownloader):
     def __init__(self, download_dir, log_dir):

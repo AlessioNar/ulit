@@ -1,7 +1,7 @@
 import unittest
 
 from unittest.mock import patch, Mock
-from ulit.download.normattiva import NormattivaDownloader
+from tulit.download.normattiva import NormattivaDownloader
 
 class TestNormattivaDownloader(unittest.TestCase):
     def setUp(self):
