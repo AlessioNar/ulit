@@ -606,9 +606,7 @@ class AkomaNtosoParser(XMLParser):
         Args:
             file (str): The path to the Akoma Ntoso XML file.
 
-        Returns:
-            list[dict]: List of extracted provisions with CELEX ID, sentence text, and eId,
-                        along with debug information.
+
         """
         debug_info = {}
         try:
