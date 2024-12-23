@@ -36,4 +36,4 @@ Parsers
    :maxdepth: 2
    :caption: Parsers:
 
-   parsers/modules
+   parsers
