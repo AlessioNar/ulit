@@ -1,4 +1,4 @@
-Usage
+Getting started
 =====
 
 .. _installation:

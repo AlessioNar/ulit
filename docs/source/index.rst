@@ -19,14 +19,22 @@ Contents
    :maxdepth: 2
    :caption: Contents:
 
-   usage
-   api
+   getting started
+
+Download
+--------
+.. toctree::
+   :maxdepth: 2
+   :caption: Download:
+
+   download
+
 
 Parsers
 -----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Parsers:
+   :caption: Akoma Ntoso Parser:
 
    parsers/modules
