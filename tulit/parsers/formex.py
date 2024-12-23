@@ -267,5 +267,4 @@ class Formex4Parser(Parser):
         self.get_preamble()
         self.get_body()
         self.get_chapters()
-        print(self.chapters)
         self.get_articles()
