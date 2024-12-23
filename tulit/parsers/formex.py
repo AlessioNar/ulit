@@ -231,8 +231,6 @@ class Formex4Parser(Parser):
                         "chapter_num" : "".join(chapter_num.itertext()).strip(),
                         "chapter_heading": "".join(chapter_heading.itertext()).strip()
                     })
-
-            print(self.chapters[index])
         
 
     def get_articles(self):
