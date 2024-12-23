@@ -6,32 +6,25 @@
 
 The `tulit` package provides utilities to work with legal data in a way that legal informatics practitioners can focus on addding value. 
 
-## 2. Installation
+## 2. Getting started
 
-### 2.1 Using Poetry Dependency Manager
-It is highly recommended to use Poetry as a dependency manager. To install the `tulit` package using Poetry, follow these steps:
+### 2.1 Installation
 
-1. Set up a Poetry environment by running the following command in your terminal:
+To install the `tulit` package, you can use the following command:
 
-```
-poetry init
-poetry shell
+```bash
+pip install tulit
 ```
 
+or using poetry:
 
-2. Add the `tulit` package as a dependency in your `pyproject.toml` file by running the following command:
-
-```
+```bash
 poetry add tulit
 ```
 
-### 2.2 Using Pip
+### 2.2 Usage
 
-Alternatively, you can install the `tulit` package in the environment of your choice by using pip by running the following command in your terminal:
-
-```
-pip install tulit
-```
+Full documentation is available at [https://tulit-docs.readthedocs.io/en/latest/index.html](https://tulit-docs.readthedocs.io/en/latest/index.html)
 
 ## Acknowledgements
 
