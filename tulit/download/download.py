@@ -9,11 +9,24 @@ class DocumentDownloader:
     A generic document downloader class.
     """	
     def __init__(self, download_dir, log_dir):
+        """
+        Initializes the downloader with directories for downloads and logs.
+        
+        Parameters
+        ----------
+        download_dir : str
+            Directory where downloaded files will be saved.
+        log_dir : str
+            Directory where log files will be saved.
+        """
         self.download_dir = download_dir
         self.log_dir = log_dir
         self._ensure_directories()
 
     def _ensure_directories(self):
+        """
+        Ensure that the download and log directories exist.
+        """
         if not os.path.exists(self.download_dir):
             os.makedirs(self.download_dir)
         if not os.path.exists(self.log_dir):
@@ -61,7 +74,19 @@ class DocumentDownloader:
             return file_path
         
     def get_extension_from_content_type(self, content_type):
-        """Map Content-Type to a file extension."""
+        """
+        Map Content-Type to a file extension.
+        
+        Parameters
+        ----------
+        content_type : str
+            The Content-Type header from the server response.
+        
+        Returns
+        -------
+        str or None
+            File extension corresponding to the Content-Type
+        """
         content_type_mapping = {
             'text/html': 'html',
             'application/json': 'json',
@@ -77,6 +102,16 @@ class DocumentDownloader:
 
     # Function to download a zip file and extract it
     def extract_zip(self, response: requests.Response, folder_path: str):
+        """
+        Extracts the content of a zip file.
+        
+        Parameters
+        ----------
+        response : requests.Response
+            The HTTP response object.
+        folder_path : str
+            Directory where the zip file will be extracted.
+        """
         try:
             z = zipfile.ZipFile(io.BytesIO(response.content))
             z.extractall(folder_path)

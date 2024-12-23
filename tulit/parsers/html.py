@@ -13,8 +13,15 @@ class HTMLParser():
         """
         Loads an HTML file and parses it with BeautifulSoup.
 
-        Args:
-            file (str): Path to the HTML file.
+        Parameters
+        ----------
+        file : str
+            The path to the HTML file.
+        
+        Returns
+        -------
+        None
+            The root element is stored in the parser under the 'root' attribute.
         """
         try:
             with open(file, 'r', encoding='utf-8') as f:
@@ -27,6 +34,15 @@ class HTMLParser():
     def get_meta(self):
         """
         Extracts metadata from the HTML.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted metadata is stored in the 'meta' attribute.
         """
         try:
             meta_elements = self.root.find_all('meta')
@@ -42,6 +58,15 @@ class HTMLParser():
     def get_preface(self):
         """
         Extracts the preface text from the HTML, if available.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted preface is stored in the 'preface' attribute.
         """
         try:
             preface_element = self.root.find('div', class_='eli-main-title')
@@ -58,6 +83,15 @@ class HTMLParser():
     def get_preamble(self):
         """
         Extracts the preamble text from the HTML, if available.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted preamble is stored in the 'preamble' attribute.
         """
         
         self.preamble = self.root.find('div', class_='eli-subdivision', id='pbl_1')
@@ -71,6 +105,18 @@ class HTMLParser():
         
 
     def get_citations(self):
+        """
+        Extracts citations from the HTML.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted citations are stored in the 'citations' attribute
+        """
         citations = self.preamble.find_all('div', class_='eli-subdivision', id=lambda x: x and x.startswith('cit_'))
         self.citations = []
         for citation in citations:
@@ -84,6 +130,18 @@ class HTMLParser():
         print(f"Citations extracted: {len(self.citations)}")
 
     def get_recitals(self):
+        """
+        Extracts recitals from the HTML.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted recitals are stored in the 'recitals' attribute.
+        """
         recitals = self.preamble.find_all('div', class_='eli-subdivision', id=lambda x: x and x.startswith('rct_'))
         self.recitals = []
         for recital in recitals:
@@ -99,6 +157,15 @@ class HTMLParser():
     def get_body(self):
         """
         Extracts the body content from the HTML.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+            The extracted body content is stored in the 'body' attribute
         """
         try:
             body_element = self.root.find('div', id=lambda x: x and x.startswith('enc_'))
