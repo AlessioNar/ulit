@@ -78,9 +78,9 @@ class TestFormex4Parser(unittest.TestCase):
         
        
         citations =  [
-                {'eId': 0, 'citation_text': "Having regard to the Treaty on the Functioning of the European Union,"},
-                {"eId": 1, 'citation_text':"Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation) , and in particular Article 143 thereof,"},
-                {"eId": 2, 'citation_text':"Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin , and in particular Article 3(4) thereof,"},
+                {'eId': 0, 'text': "Having regard to the Treaty on the Functioning of the European Union,"},
+                {"eId": 1, 'text':"Having regard to Council Regulation (EC) No 1234/2007 of 22 October 2007 establishing a common organisation of agricultural markets and on specific provisions for certain agricultural products (Single CMO Regulation) , and in particular Article 143 thereof,"},
+                {"eId": 2, 'text':"Having regard to Council Regulation (EC) No 614/2009 of 7 July 2009 on the common system of trade for ovalbumin and lactalbumin , and in particular Article 3(4) thereof,"},
             ]
         
         self.assertEqual(self.parser.citations, citations)

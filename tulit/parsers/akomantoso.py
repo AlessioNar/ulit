@@ -246,8 +246,9 @@ class AkomaNtosoParser(XMLParser):
         Returns
         -------
         list
-            List of dictionaries containing citation text without the associated
-            authorial notes.
+            List of dictionaries containing citation data with keys:
+            - 'eId': Citation identifier, which is retrieved from the 'eId' attribute
+            - 'citation_text': Citation text
         """
         def extract_eId(citation, index):
             return citation.get('eId')

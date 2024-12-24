@@ -67,11 +67,12 @@ class TestAkomaNtosoParser(unittest.TestCase):
         """Test citation extraction in the preamble section."""
         self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
         self.parser.get_citations()
+        
         self.assertIsNotNone(self.parser.citations, "Citations data not found")
 
         first_citation = self.parser.citations[0]
         expected_text = "Having regard to the Treaty on the Functioning of the European Union, and in particular Article 114"
-        self.assertIn(expected_text, first_citation['citation_text'])
+        self.assertIn(expected_text, first_citation['text'])
 
     def test_get_recitals(self):
         """Test retrieval and content verification of recitals in the preamble."""
