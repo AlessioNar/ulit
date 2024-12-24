@@ -74,7 +74,7 @@ class TestFormex4Parser(unittest.TestCase):
         self.maxDiff = None  # Allow full diff if needed
         self.parser.get_preamble(preamble_xpath='.//PREAMBLE', notes_xpath='.//NOTE')
         
-        self.parser.get_citations(citations_xpath='.//GR.VISA', citation_xpath='.//VISA')
+        self.parser.get_citations()
         
        
         citations =  [

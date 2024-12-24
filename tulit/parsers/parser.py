@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from lxml import etree
 import os
+import re
 
 class XMLParser(ABC):
     """
@@ -240,8 +241,45 @@ class XMLParser(ABC):
         if self.preamble is not None:            
             self.preamble = self.remove_node(self.preamble, notes_xpath)
             self.formula = self.get_formula()
-            #self.citations = self.get_citations()
+    
             #self.recitals = self.get_recitals()
+    
+    def get_citations(self, citations_xpath, citation_xpath, extract_eId=None):
+        """
+        Extracts citations from the preamble.
+
+        Parameters
+        ----------
+        citations_xpath : str
+            XPath to locate the citations section.
+        citation_xpath : str
+            XPath to locate individual citations.
+        extract_eId : function, optional
+            Function to handle the extraction or generation of eId.
+
+        Returns
+        -------
+        list
+            List of dictionaries containing citation text.
+        """
+        citations_section = self.preamble.find(citations_xpath, namespaces=self.namespaces)
+        if citations_section is None:
+            return None
+
+        citations = []
+        for index, citation in enumerate(citations_section.findall(citation_xpath, namespaces=self.namespaces)):
+            citation_text = "".join(citation.itertext()).strip()
+            citation_text = citation_text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
+            citation_text = re.sub(' +', ' ', citation_text)  # replace multiple spaces with a single space
+            
+            eId = extract_eId(citation, index) if extract_eId else index
+            # Up until here, the code is the same as for Formex
+            citations.append({
+                'eId' : eId,
+                'citation_text': citation_text,
+            })
+        
+        self.citations = citations
 
     ### Enacting terms block
     def get_body(self, body_xpath) -> None:

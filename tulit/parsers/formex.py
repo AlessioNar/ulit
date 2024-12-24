@@ -83,7 +83,7 @@ class Formex4Parser(XMLParser):
         
         return self.formula
     
-    def get_citations(self, citations_xpath, citation_xpath):
+    def get_citations(self):
         """
         Extracts citations from the preamble.
 
@@ -92,25 +92,16 @@ class Formex4Parser(XMLParser):
         list
             List of dictionaries containing citation text.
         """
-        citations_section = self.preamble.find(citations_xpath, namespaces=self.namespaces)
-        if citations_section is None:
-            return None
+        def extract_eId(citation, index):
+            return index
         
-        citations = []
-        for index, citation in enumerate(self.preamble.findall(citation_xpath)):
-            citation_text = "".join(citation.itertext()).strip()  # Using itertext() to get all nested text
-            citation_text = citation_text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
-            citation_text = re.sub(' +', ' ', citation_text)  # replace multiple spaces with a single space
-            
-            citations.append({
-                'eId': index,
-                'citation_text': citation_text
-            })
-                
-        self.citations = citations
-
+        return super().get_citations(
+            citations_xpath='.//GR.VISA',
+            citation_xpath='.//VISA',
+            extract_eId=extract_eId
+        )
     
-    def get_recitals(self):
+    def get_recitals(self, recitals_xpath='.//GR.CONSID', recital_xpath='.//CONSID') -> None:
         """
         Extracts recitals from the preamble.
 
@@ -119,7 +110,6 @@ class Formex4Parser(XMLParser):
         list
             List of dictionaries containing recital text and eId for each recital.
         """
-        #preamble_data["preamble_final"] = self.preamble.findtext('PREAMBLE.FINAL')
 
         recitals = []
         recitals.append({
@@ -127,13 +117,15 @@ class Formex4Parser(XMLParser):
             "recital_text": self.preamble.findtext('.//GR.CONSID/GR.CONSID.INIT')
             })
 
-        for recital in self.preamble.findall('.//CONSID'):
+        for recital in self.preamble.findall(recital_xpath):
             recital_num = recital.findtext('.//NO.P')
             recital_text = "".join(recital.find('.//TXT').itertext()).strip()
             recitals.append({
                     "eId": recital_num, 
                     "recital_text": recital_text
                 })
+        #preamble_data["preamble_final"] = self.preamble.findtext('PREAMBLE.FINAL')
+            
         self.recitals = recitals
         
    

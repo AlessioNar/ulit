@@ -239,31 +239,24 @@ class AkomaNtosoParser(XMLParser):
         formula_text = ' '.join(p.text.strip() for p in formula.findall('akn:p', namespaces=self.namespaces) if p.text)
         return formula_text
     
-    def get_citations(self, citations_xpath, citation_xpath):
+    def get_citations(self) -> list:
         """
         Extracts citations from the preamble.
 
         Returns
         -------
-        list or None
+        list
             List of dictionaries containing citation text without the associated
-            authorial notes. Returns None if no citations are found.
+            authorial notes.
         """
-        citations_section = self.preamble.find(citations_xpath, namespaces=self.namespaces)
-        if citations_section is None:
-            return None
+        def extract_eId(citation, index):
+            return citation.get('eId')
 
-        citations = []
-        for citation in citations_section.findall(citation_xpath, namespaces=self.namespaces):
-            citation_text = "".join(citation.itertext()).strip()
-            citation_eId = citation.get('eId')
-
-            citations.append({
-                'eId' : citation_eId,
-                'citation_text': citation_text,
-            })
-        
-        self.citations = citations
+        return super().get_citations(
+            citations_xpath='.//akn:citations',
+            citation_xpath='.//akn:citation',
+            extract_eId=extract_eId
+        )
     
     def get_recitals(self):
         """

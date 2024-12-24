@@ -66,7 +66,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
     def test_get_citations(self):
         """Test citation extraction in the preamble section."""
         self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
-        self.parser.get_citations(citations_xpath='.//akn:citations', citation_xpath='.//akn:citation')
+        self.parser.get_citations()
         self.assertIsNotNone(self.parser.citations, "Citations data not found")
 
         first_citation = self.parser.citations[0]
