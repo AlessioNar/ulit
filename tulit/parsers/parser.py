@@ -268,12 +268,15 @@ class XMLParser(ABC):
 
         citations = []
         for index, citation in enumerate(citations_section.findall(citation_xpath, namespaces=self.namespaces)):
+            
+            # Extract the citation text
             text = "".join(citation.itertext()).strip()
             text = text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
             text = re.sub(' +', ' ', text)  # replace multiple spaces with a single space
             
+            # Get an eId for the citation, depending on the XML format
             eId = extract_eId(citation, index) if extract_eId else index
-            # Up until here, the code is the same as for Formex
+            
             citations.append({
                 'eId' : eId,
                 'text': text,
