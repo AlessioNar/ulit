@@ -92,7 +92,7 @@ class Formex4Parser(XMLParser):
         list
             List of dictionaries containing citation data with keys:
             - 'eId': Citation identifier, which is the index of the citation in the preamble
-            - 'citation_text': Citation text
+            - 'text': Citation text
         """
         def extract_eId(citation, index):
             return index
