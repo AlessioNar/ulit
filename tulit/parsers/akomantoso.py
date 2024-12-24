@@ -20,7 +20,7 @@ class AkomaNtosoParser(XMLParser):
         """
         Initializes the parser.
         """
-        
+        super().__init__()
         self.meta = None
     
         self.meta_identification = None    
@@ -239,7 +239,7 @@ class AkomaNtosoParser(XMLParser):
         formula_text = ' '.join(p.text.strip() for p in formula.findall('akn:p', namespaces=self.namespaces) if p.text)
         return formula_text
     
-    def get_citations(self):
+    def get_citations(self, citations_xpath, citation_xpath):
         """
         Extracts citations from the preamble.
 
@@ -249,24 +249,21 @@ class AkomaNtosoParser(XMLParser):
             List of dictionaries containing citation text without the associated
             authorial notes. Returns None if no citations are found.
         """
-        citations_section = self.root.find('.//akn:preamble/akn:citations', namespaces=self.namespaces)
+        citations_section = self.preamble.find(citations_xpath, namespaces=self.namespaces)
         if citations_section is None:
             return None
-        # Removing all authorialNote nodes
-        citations_section = self.remove_node(citations_section, './/akn:authorialNote')
 
         citations = []
-        for citation in citations_section.findall('akn:citation', namespaces=self.namespaces):
-            # Collect bare text within each <p> in <citation>            
+        for citation in citations_section.findall(citation_xpath, namespaces=self.namespaces):
             citation_text = "".join(citation.itertext()).strip()
             citation_eId = citation.get('eId')
 
             citations.append({
-                'citation_text': citation_text,
                 'eId' : citation_eId,
+                'citation_text': citation_text,
             })
         
-        return citations
+        self.citations = citations
     
     def get_recitals(self):
         """
@@ -278,16 +275,16 @@ class AkomaNtosoParser(XMLParser):
             List of dictionaries containing recital text and eId for each
             recital. Returns None if no recitals are found.
         """
-        recitals_section = self.root.find('.//akn:preamble/akn:recitals', namespaces=self.namespaces)
+        recitals_section = self.preamble.find('.//akn:recitals', namespaces=self.namespaces)
         if recitals_section is None:
             return None
 
         recitals = []
                 
         # Intro
-        recitals_intro = recitals_section.find('akn:intro', namespaces=self.namespaces)
+        recitals_intro = recitals_section.find('.//akn:intro', namespaces=self.namespaces)
         recitals_intro_eId = recitals_intro.get('eId')
-        recitals_intro_text = ' '.join(p.text.strip() for p in recitals_intro.findall('akn:p', namespaces=self.namespaces) if p.text)
+        recitals_intro_text = ' '.join(p.text.strip() for p in recitals_intro.findall('.//akn:p', namespaces=self.namespaces) if p.text)
         recitals.append({
             'recital_text': recitals_intro_text,
             'eId': recitals_intro_eId
@@ -297,11 +294,11 @@ class AkomaNtosoParser(XMLParser):
         recitals_section = self.remove_node(recitals_section, './/akn:authorialNote')
 
         # Step 2: Process each <recital> element in the recitals_section without the <authorialNote> elements
-        for recital in recitals_section.findall('akn:recital', namespaces=self.namespaces):
+        for recital in recitals_section.findall('.//akn:recital', namespaces=self.namespaces):
             eId = str(recital.get('eId'))
 
             # Extract text from remaining <akn:p> elements
-            recital_text = ' '.join(' '.join(p.itertext()).strip() for p in recital.findall('akn:p', namespaces=self.namespaces))
+            recital_text = ' '.join(' '.join(p.itertext()).strip() for p in recital.findall('.//akn:p', namespaces=self.namespaces))
 
             # Remove any double spaces in the concatenated recital text
             recital_text = re.sub(r'\s+', ' ', recital_text)
@@ -312,7 +309,7 @@ class AkomaNtosoParser(XMLParser):
                 'eId': eId
             })
 
-        return recitals
+        self.recitals = recitals
     
     ### Act block
     def get_act(self) -> None:
@@ -330,9 +327,18 @@ class AkomaNtosoParser(XMLParser):
             # Fallback: try without namespace
             self.act = self.root.find('.//act')
         
-    def get_chapters(self, chapter_xpath) -> None:        
+    def get_chapters(self, chapter_xpath, num_xpath, heading_xpath) -> None:        
         """
         Extracts chapter information from the document.
+        
+        Parameters
+        ----------
+        chapter_xpath : str
+            XPath expression to locate the chapter elements.
+        num_xpath : str
+            XPath expression to locate the chapter number within each chapter element.
+        heading_xpath : str
+            XPath expression to locate the chapter heading within each chapter element.
 
         Returns
         -------
@@ -341,14 +347,12 @@ class AkomaNtosoParser(XMLParser):
             - 'eId': Chapter identifier
             - 'chapter_num': Chapter number
             - 'chapter_heading': Chapter heading text
-        """
-        self.chapters = []  # Reset chapters list
-        
+        """        
         # Find all <chapter> elements in the body
         for chapter in self.body.findall(chapter_xpath, namespaces=self.namespaces):
             eId = chapter.get('eId')
-            chapter_num = chapter.find('akn:num', namespaces=self.namespaces)
-            chapter_heading = chapter.find('akn:heading', namespaces=self.namespaces)
+            chapter_num = chapter.find(num_xpath, namespaces=self.namespaces)
+            chapter_heading = chapter.find(heading_xpath, namespaces=self.namespaces)
             
             # Add chapter data to chapters list
             self.chapters.append({
@@ -375,7 +379,6 @@ class AkomaNtosoParser(XMLParser):
 
         # Removing all authorialNote nodes
         self.body = self.remove_node(self.body, './/akn:authorialNote')
-
 
         # Find all <article> elements in the XML
         for article in self.body.findall('.//akn:article', namespaces=self.namespaces):
@@ -529,13 +532,16 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Preface parsed successfully.")
                 except Exception as e:
                     print(f"Error in get_preface: {e}")
-
                 try:
                     self.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath=".//akn:authorialNote")
                     print(f"Preamble parsed successfully.")
                 except Exception as e:
                     print(f"Error in get_preamble: {e}")
-
+                try:
+                    self.get_citations(citations_xpath='.//akn:citations', citation_xpath='.//akn:citation')
+                    print(f"Citations parsed successfully.")
+                except Exception as e:
+                    print(f"Error in get_citations: {e}")
                 try:
                     self.get_body(body_xpath='.//akn:body')
                     print("Body parsed successfully.")
@@ -543,7 +549,7 @@ class AkomaNtosoParser(XMLParser):
                     print(f"Error in get_body: {e}")
 
                 try:
-                    self.get_chapters(chapter_xpath='.//akn:chapter')
+                    self.get_chapters(chapter_xpath='.//akn:chapter', num_xpath='.//akn:num', heading_xpath='.//akn:heading')
                     debug_info['chapters'] = len(self.chapters) if hasattr(self, 'chapters') else 0
                     print(f"Chapters parsed successfully. Number of chapters: {debug_info['chapters']}")
                 except Exception as e:

@@ -22,22 +22,22 @@ class XMLParser(ABC):
         Extracted preface text from the XML document.
     preamble : lxml.etree.Element or None
         The preamble section of the XML document.
-    formula : None
-        Placeholder for future use.
+    formula : str or None
+        The formula element extracted from the preamble.
     citations : list or None
         List of extracted citations from the preamble.
     recitals : list or None
         List of extracted recitals from the preamble.
     body : lxml.etree.Element or None
         The body section of the XML document.
-    chapters : list
+    chapters : list or None
         List of extracted chapters from the body.
-    articles : list
+    articles : list or None
         List of extracted articles from the body.
     articles_text : list
         List of extracted article texts.
-    conclusions : None
-        Placeholder for future use.
+    conclusions : None or str
+        Extracted conclusions from the body.
     """
     
     def __init__(self):
@@ -240,8 +240,8 @@ class XMLParser(ABC):
         if self.preamble is not None:            
             self.preamble = self.remove_node(self.preamble, notes_xpath)
             self.formula = self.get_formula()
-            self.citations = self.get_citations()
-            self.recitals = self.get_recitals()
+            #self.citations = self.get_citations()
+            #self.recitals = self.get_recitals()
 
     ### Enacting terms block
     def get_body(self, body_xpath) -> None:

@@ -25,7 +25,8 @@ class Formex4Parser(XMLParser):
         Initializes the parser.
         """
         # Define the namespace mapping
-        
+        super().__init__()
+
         self.namespaces = {
             'fmx': 'http://formex.publications.europa.eu/schema/formex-05.56-20160701.xd'
         }
@@ -81,8 +82,8 @@ class Formex4Parser(XMLParser):
         self.formula = self.preamble.findtext('PREAMBLE.INIT')
         
         return self.formula
-
-    def get_citations(self):
+    
+    def get_citations(self, citations_xpath, citation_xpath):
         """
         Extracts citations from the preamble.
 
@@ -91,8 +92,12 @@ class Formex4Parser(XMLParser):
         list
             List of dictionaries containing citation text.
         """
+        citations_section = self.preamble.find(citations_xpath, namespaces=self.namespaces)
+        if citations_section is None:
+            return None
+        
         citations = []
-        for index, citation in enumerate(self.preamble.findall('.//VISA')):
+        for index, citation in enumerate(self.preamble.findall(citation_xpath)):
             citation_text = "".join(citation.itertext()).strip()  # Using itertext() to get all nested text
             citation_text = citation_text.replace('\n', '').replace('\t', '').replace('\r', '')  # remove newline and tab characters
             citation_text = re.sub(' +', ' ', citation_text)  # replace multiple spaces with a single space
@@ -102,7 +107,8 @@ class Formex4Parser(XMLParser):
                 'citation_text': citation_text
             })
                 
-        return citations 
+        self.citations = citations
+
     
     def get_recitals(self):
         """
@@ -128,7 +134,7 @@ class Formex4Parser(XMLParser):
                     "eId": recital_num, 
                     "recital_text": recital_text
                 })
-        return recitals
+        self.recitals = recitals
         
    
     

@@ -54,9 +54,8 @@ class TestAkomaNtosoParser(unittest.TestCase):
     def test_get_preamble(self):
         """Test retrieval of preamble data from the XML file."""
         self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
+        self.assertIsNotNone(self.parser.preamble, "Preamble element not found")
         self.assertIsNotNone(self.parser.formula, "Formula not found")
-        self.assertIsNotNone(self.parser.citations, "Citations data not found")
-        self.assertIsNotNone(self.parser.recitals, "Recitals data not found")
         
 
     def test_get_formula(self):
@@ -66,18 +65,20 @@ class TestAkomaNtosoParser(unittest.TestCase):
 
     def test_get_citations(self):
         """Test citation extraction in the preamble section."""
-        citations_data = self.parser.get_citations()
-        self.assertGreater(len(citations_data), 0, "No citations found in preamble")
-        
-        first_citation = citations_data[0]
+        self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
+        self.parser.get_citations(citations_xpath='.//akn:citations', citation_xpath='.//akn:citation')
+        self.assertIsNotNone(self.parser.citations, "Citations data not found")
+
+        first_citation = self.parser.citations[0]
         expected_text = "Having regard to the Treaty on the Functioning of the European Union, and in particular Article 114"
         self.assertIn(expected_text, first_citation['citation_text'])
 
     def test_get_recitals(self):
         """Test retrieval and content verification of recitals in the preamble."""
-        recitals_data = self.parser.get_recitals()
-        self.assertIsNotNone(recitals_data, "Recitals section not found in <preamble>")
-        self.assertEqual(len(recitals_data), 59, "Incorrect number of recitals extracted")
+        self.parser.get_preamble(preamble_xpath='.//akn:preamble', notes_xpath='.//akn:authorialNote')
+        self.parser.get_recitals()
+        self.assertIsNotNone(self.parser.recitals, "Recitals section not found in <preamble>")
+        self.assertEqual(len(self.parser.recitals), 59, "Incorrect number of recitals extracted")
         expected_recitals = {
             0: {'eId': "recs_1__intro_1", 'text': "Whereas:"},
             2: {'eId': "recs_1__rec_(2)", 'text': "In this respect, Directive 2007/64/EC of the European Parliament and of the Council established basic transparency requirements for fees charged by payment service providers in relation to services offered on payment accounts. This has substantially facilitated the activity of payment service providers, creating uniform rules with respect to the provision of payment services and the information to be provided, reduced the administrative burden and generated cost savings for payment service providers."},
@@ -87,9 +88,9 @@ class TestAkomaNtosoParser(unittest.TestCase):
         # Iterate over the selected recitals to verify content and ID
         for index, expected_values in expected_recitals.items():
             with self.subTest(recital=index):
-                self.assertEqual(recitals_data[index]['eId'], expected_values['eId'], 
+                self.assertEqual(self.parser.recitals[index]['eId'], expected_values['eId'], 
                                  f"Recital {index} ID does not match expected value")
-                self.assertIn(expected_values['text'], recitals_data[index]['recital_text'], 
+                self.assertIn(expected_values['text'], self.parser.recitals[index]['recital_text'], 
                               f"Recital {index} text does not match expected content")
 
     def test_get_act(self):
@@ -105,7 +106,7 @@ class TestAkomaNtosoParser(unittest.TestCase):
     def test_get_chapters(self):
         """Test retrieval and content of chapter headings."""
         self.parser.get_body(body_xpath='.//akn:body')
-        self.parser.get_chapters(chapter_xpath='.//akn:chapter')
+        self.parser.get_chapters(chapter_xpath='.//akn:chapter', num_xpath='.//akn:num', heading_xpath='.//akn:heading')
 
         expected_chapters = [
             {'eId': 'chp_I', 'chapter_num': 'CHAPTER I', 'chapter_heading': 'SUBJECT MATTER, SCOPE AND DEFINITIONS'},
